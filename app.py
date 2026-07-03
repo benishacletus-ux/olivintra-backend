@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
+from flask_cors import CORS  # <-- ADDED
 from werkzeug.utils import secure_filename
 import os
 import json
@@ -17,6 +18,9 @@ from payment_routes import payment_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# ========== ADD CORS ==========
+CORS(app)  # <-- ADDED - Allows Netlify to call your API
 
 db.init_app(app)
 
@@ -1508,6 +1512,319 @@ def escapejs_filter(value):
     # Escape single quotes and backslashes
     return value.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
 
+# ==================== API ROUTES FOR FRONTEND ====================
+
+@app.route('/api/health', methods=['GET'])
+def api_health():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'API is running',
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/api/products', methods=['GET'])
+def api_products():
+    """Get all products as JSON"""
+    products = Product.query.all()
+    return jsonify([{
+        'id': p.id,
+        'name': p.name,
+        'slug': p.slug,
+        'price': float(p.price),
+        'original_price': float(p.original_price) if p.original_price else None,
+        'description': p.description,
+        'image': p.image,
+        'category': p.category.name if p.category else None,
+        'in_stock': p.in_stock,
+        'rating': float(p.rating) if p.rating else 0,
+        'created_at': p.created_at.isoformat() if p.created_at else None
+    } for p in products])
+
+@app.route('/api/product/<slug>', methods=['GET'])
+def api_product_detail(slug):
+    """Get single product as JSON"""
+    product = Product.query.filter_by(slug=slug).first()
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+    
+    return jsonify({
+        'id': product.id,
+        'name': product.name,
+        'slug': product.slug,
+        'price': float(product.price),
+        'original_price': float(product.original_price) if product.original_price else None,
+        'description': product.description,
+        'image': product.image,
+        'images': product.get_images(),
+        'category': product.category.name if product.category else None,
+        'category_id': product.category_id,
+        'in_stock': product.in_stock,
+        'stock': product.stock,
+        'rating': float(product.rating) if product.rating else 0,
+        'review_count': product.review_count or 0,
+        'sizes': json.loads(product.sizes) if product.sizes else [],
+        'material': product.material,
+        'care_instructions': product.care_instructions,
+        'is_featured': product.is_featured,
+        'is_best_seller': product.is_best_seller,
+        'is_new_arrival': product.is_new_arrival,
+        'created_at': product.created_at.isoformat() if product.created_at else None
+    })
+
+@app.route('/api/categories', methods=['GET'])
+def api_categories():
+    """Get all categories as JSON"""
+    categories = Category.query.all()
+    return jsonify([{
+        'id': c.id,
+        'name': c.name,
+        'slug': c.slug,
+        'description': c.description,
+        'image': c.image
+    } for c in categories])
+
+@app.route('/api/create-order', methods=['POST'])
+def api_create_order():
+    """Create order from frontend"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'email', 'phone', 'address', 'city', 'state', 'pincode', 'cart_items']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        # Calculate subtotal
+        subtotal = 0
+        cart_items_data = []
+        for item in data['cart_items']:
+            product = Product.query.get(item['product_id'])
+            if not product:
+                return jsonify({'success': False, 'error': f'Product {item["product_id"]} not found'}), 404
+            subtotal += product.price * item['quantity']
+            cart_items_data.append({
+                'product': product,
+                'quantity': item['quantity'],
+                'size': item.get('size', 'N/A')
+            })
+        
+        shipping = 60 if subtotal < 2999 else 0
+        total = subtotal + shipping
+        
+        # Generate order number
+        order_number = f"OL-{datetime.now().strftime('%Y%m%d')}-{secrets.token_hex(4).upper()}"
+        
+        # Create order
+        order = Order(
+            order_number=order_number,
+            customer_name=data['name'],
+            customer_email=data['email'],
+            customer_phone=data['phone'],
+            shipping_address=data['address'],
+            city=data['city'],
+            state=data['state'],
+            pincode=data['pincode'],
+            total_amount=total,
+            payment_method='Razorpay',
+            payment_status='pending',
+            notes=data.get('notes', ''),
+            user_id=None
+        )
+        db.session.add(order)
+        db.session.flush()
+        
+        # Add order items
+        for item in cart_items_data:
+            order_item = OrderItem(
+                order_id=order.id,
+                product_id=item['product'].id,
+                product_name=item['product'].name,
+                quantity=item['quantity'],
+                price=item['product'].price,
+                size=item['size']
+            )
+            db.session.add(order_item)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'order_id': order.id,
+            'order_number': order.order_number,
+            'total_amount': float(total),
+            'subtotal': float(subtotal),
+            'shipping': float(shipping)
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/verify-payment', methods=['POST'])
+def api_verify_payment():
+    """Verify payment from frontend"""
+    try:
+        data = request.get_json()
+        order_id = data.get('order_id')
+        payment_id = data.get('payment_id')
+        signature = data.get('signature')
+        
+        # Your Razorpay verification logic here
+        # This is a placeholder - you'll integrate with your payment_routes.py
+        
+        # Update order status
+        order = Order.query.get(order_id)
+        if order:
+            order.payment_status = 'paid'
+            order.status = 'confirmed'
+            order.razorpay_payment_id = payment_id
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Payment verified',
+            'order_id': order_id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/order/<int:order_id>', methods=['GET'])
+def api_get_order(order_id):
+    """Get order details as JSON"""
+    order = Order.query.get_or_404(order_id)
+    return jsonify({
+        'id': order.id,
+        'order_number': order.order_number,
+        'customer_name': order.customer_name,
+        'customer_email': order.customer_email,
+        'customer_phone': order.customer_phone,
+        'shipping_address': order.shipping_address,
+        'city': order.city,
+        'state': order.state,
+        'pincode': order.pincode,
+        'total_amount': float(order.total_amount),
+        'status': order.status,
+        'payment_status': order.payment_status,
+        'payment_method': order.payment_method,
+        'created_at': order.created_at.isoformat() if order.created_at else None,
+        'items': [{
+            'product_name': item.product_name,
+            'quantity': item.quantity,
+            'price': float(item.price),
+            'size': item.size
+        } for item in order.items]
+    })
+
+@app.route('/api/my-orders', methods=['POST'])
+def api_my_orders():
+    """Get orders by email"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({'success': False, 'error': 'Email is required'}), 400
+        
+        orders = Order.query.filter_by(customer_email=email).order_by(Order.created_at.desc()).all()
+        
+        return jsonify({
+            'success': True,
+            'orders': [{
+                'id': o.id,
+                'order_number': o.order_number,
+                'total_amount': float(o.total_amount),
+                'status': o.status,
+                'payment_status': o.payment_status,
+                'created_at': o.created_at.isoformat() if o.created_at else None,
+                'items': [{
+                    'product_name': item.product_name,
+                    'quantity': item.quantity,
+                    'price': float(item.price),
+                    'size': item.size
+                } for item in o.items]
+            } for o in orders]
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/submit-review', methods=['POST'])
+def api_submit_review():
+    """Submit review from frontend"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['product_id', 'order_id', 'rating', 'comment', 'customer_name', 'customer_email']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        # Check if already reviewed
+        existing_review = Review.query.filter_by(
+            product_id=data['product_id'],
+            order_id=data['order_id']
+        ).first()
+        
+        if existing_review:
+            return jsonify({'success': False, 'error': 'You have already reviewed this product'}), 400
+        
+        review = Review(
+            product_id=data['product_id'],
+            order_id=data['order_id'],
+            customer_name=data['customer_name'],
+            customer_email=data['customer_email'],
+            rating=data['rating'],
+            title=data.get('title', ''),
+            comment=data['comment'],
+            is_verified=True,
+            is_approved=True
+        )
+        db.session.add(review)
+        db.session.commit()
+        
+        update_product_rating(data['product_id'])
+        
+        return jsonify({
+            'success': True,
+            'message': 'Review submitted successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/contact', methods=['POST'])
+def api_contact():
+    """Submit contact form from frontend"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['name', 'email', 'message']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
+        
+        message = ContactMessage(
+            name=data['name'],
+            email=data['email'],
+            phone=data.get('phone', ''),
+            message=data['message']
+        )
+        db.session.add(message)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Message sent successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ==================== RUN APP ====================
 if __name__ == '__main__':
     print("=" * 50)
@@ -1524,6 +1841,18 @@ if __name__ == '__main__':
     print("📋 My Orders: http://localhost:5000/my-orders (Search by email only)")
     print("📊 Admin Analytics: http://localhost:5000/admin")
     print("🔔 Admin Notifications: http://localhost:5000/admin/notifications/count")
+    print("=" * 50)
+    print("🔄 API Endpoints added for frontend:")
+    print("   /api/health")
+    print("   /api/products")
+    print("   /api/product/<slug>")
+    print("   /api/categories")
+    print("   /api/create-order")
+    print("   /api/verify-payment")
+    print("   /api/order/<id>")
+    print("   /api/my-orders")
+    print("   /api/submit-review")
+    print("   /api/contact")
     print("=" * 50)
     print("Press CTRL+C to stop")
     print("=" * 50)
