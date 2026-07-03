@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Show lookup form if no orders are displayed -->
+    {% if not searched or not orders %}
+    <div class="max-w-lg mx-auto">
+        <div class="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+            <div class="text-center mb-6">
+                <i class="fas fa-search text-4xl text-brand-accent mb-3"></i>
+                <h1 class="text-2xl font-serif text-brand-dark">Find Your Orders</h1>
+                <p class="text-gray-500 text-sm mt-1">Enter your email to view all your orders</p>
+            </div>
+
+            <form method="POST" action="/my-orders">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                        <input type="email" name="email" required 
+                               placeholder="Enter the email used for order"
+                               value="{{ email if email else '' }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none transition">
+                        
+                    </div>
+                    <button type="submit" class="w-full bg-brand-dark text-white py-3 rounded-lg hover:bg-brand-accent transition font-medium">
+                        <i class="fas fa-search mr-2"></i> Find My Orders
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center border-t border-gray-200 pt-6">
+                <p class="text-sm text-gray-500">Don't have an account?</p>
+                <p class="text-xs text-gray-400 mt-1">Enter the email you used when placing your order</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Show orders if found -->
+    {% if orders %}
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark">My Orders</h1>
+                <p class="text-gray-500 text-sm mt-1">Showing orders for: <span class="font-semibold">{{ email }}</span></p>
+            </div>
+            <a href="/my-orders" class="text-brand-accent hover:underline text-sm">
+                <i class="fas fa-arrow-left mr-1"></i> Search Another Order
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            {% for order in orders %}
+            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="flex flex-wrap justify-between items-start gap-4">
+                    <div>
+                        <p class="font-semibold text-brand-dark text-lg">#{{ order.order_number }}</p>
+                        <p class="text-sm text-gray-500">{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <p class="text-sm">Total: <span class="font-semibold">₹{{ "%.2f"|format(order.total_amount) }}</span></p>
+                            <span class="status-badge px-2 py-1 rounded text-xs {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif order.status == 'shipped' %}bg-purple-100 text-purple-800{% elif order.status == 'delivered' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 border-t border-gray-100 pt-4">
+                    <p class="text-sm font-medium text-gray-700 mb-2">Items:</p>
+                    <div class="space-y-2">
+                        {% for item in order.items %}
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gray-100 rounded overflow-hidden">
+                                    <div class="w-full h-full bg-cover bg-center"
+                                         style="background-image: url('{% if item.product and item.product.image %}{{ url_for('static', filename='uploads/' + item.product.image) }}{% else %}https://via.placeholder.com/50/cccccc/333333?text=No{% endif %}');">
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">{{ item.product_name }}</p>
+                                    <p class="text-xs text-gray-500">Qty: {{ item.quantity }} × ₹{{ "%.2f"|format(item.price) }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="/product/{% if item.product %}{{ item.product.slug }}{% endif %}" class="text-brand-accent hover:underline text-xs">
+                                    View
+                                </a>
+                                {% if order.status == 'delivered' %}
+                                <button onclick="openReviewModal('{{ item.product_id }}', '{{ order.id }}', '{{ item.product_name }}')" 
+                                        class="bg-brand-accent text-white px-3 py-1 rounded text-xs hover:bg-brand-dark transition">
+                                    <i class="fas fa-star mr-1"></i> Write Review
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if order.status != 'delivered' %}
+                <div class="mt-3 text-xs text-gray-400 border-t border-gray-100 pt-3">
+                    <i class="fas fa-info-circle"></i> Reviews can be written after the order is delivered
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Review Modal -->
+<div id="reviewModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-serif text-brand-dark">Write a Review</h3>
+            <button onclick="closeReviewModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <form method="POST" action="/submit-review" id="reviewForm">
+            <input type="hidden" name="product_id" id="reviewProductId">
+            <input type="hidden" name="order_id" id="reviewOrderId">
+            
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600">Product: <span id="reviewProductName" class="font-semibold text-brand-dark"></span></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                <input type="text" name="customer_name" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-brand-accent">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Your Email *</label>
+                <input type="email" name="customer_email" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-brand-accent">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Rating *</label>
+                <div class="flex gap-2 text-2xl" id="starRating">
+                    <i class="far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition" data-rating="1" onclick="setRating(1)"></i>
+                    <i class="far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition" data-rating="2" onclick="setRating(2)"></i>
+                    <i class="far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition" data-rating="3" onclick="setRating(3)"></i>
+                    <i class="far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition" data-rating="4" onclick="setRating(4)"></i>
+                    <i class="far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition" data-rating="5" onclick="setRating(5)"></i>
+                </div>
+                <input type="hidden" name="rating" id="ratingValue" value="0">
+                <p class="text-xs text-gray-400 mt-1">Click on a star to rate</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Review Title (Optional)</label>
+                <input type="text" name="title" class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-brand-accent" placeholder="Great product!">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Your Review *</label>
+                <textarea name="comment" rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-brand-accent" placeholder="Share your experience with this product..."></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-brand-dark text-white py-3 rounded hover:bg-brand-accent transition font-medium">
+                <i class="fas fa-paper-plane mr-2"></i> Submit Review
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+ <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Follow Us Section -->
+        <div class="text-center mb-6">
+            <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
+            <div class="flex justify-center gap-6">
+                <a href="https://www.facebook.com/share/18hECcHyk6/" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Facebook">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/olivintraa?igsh=dTV5YmIwZzhqcW03" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <!-- You can add more social icons here -->
+            </div>
+        </div>
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div class="md:col-span-4 space-y-3">
+            <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
+            <p class="text-gray-400 max-w-xs leading-relaxed">Timeless fashion for every moment. Beautifully designed ethnic wear tailored with precision and premium craftsmanship.</p>
+        </div>
+        <div class="md:col-span-2 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Shop</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/shop" class="hover:text-white transition">All Products</a></li>
+                <li><a href="/new-arrivals" class="hover:text-white transition">New Arrivals</a></li>
+                <li><a href="/best-sellers" class="hover:text-white transition">Best Sellers</a></li>
+                <li><a href="/my-orders" class="hover:text-white transition">My Orders</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Contact</h4>
+            <ul class="space-y-1.5 text-gray-400">
+                <li><span class="font-medium text-gray-300 text-[11px]">942P+WJX Parassala,<br>Kerala, India</span></li>
+                <li><a href="tel:+919037392700" class="hover:text-white transition">+91 90373 92700</a></li>
+                <li><a href="mailto:olivintra@gmail.com" class="hover:text-white transition text-[11px]">olivintra@gmail.com</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Quick Links</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+                <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
+                <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
+                <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800 mt-8 sm:mt-12 pt-6 text-center text-gray-600 text-[10px] sm:text-xs">
+        &copy; 2026 Olivintra. All Rights Reserved.
+    </div>
+</footer>
+
+<script>
+let selectedRating = 0;
+
+function setRating(rating) {
+    selectedRating = rating;
+    document.getElementById('ratingValue').value = rating;
+    
+    const stars = document.querySelectorAll('#starRating .fa-star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.className = 'fas fa-star text-amber-500 cursor-pointer hover:text-amber-500 transition';
+        } else {
+            star.className = 'far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition';
+        }
+    });
+}
+
+function openReviewModal(productId, orderId, productName) {
+    document.getElementById('reviewProductId').value = productId;
+    document.getElementById('reviewOrderId').value = orderId;
+    document.getElementById('reviewProductName').textContent = productName;
+    document.getElementById('reviewModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Reset form
+    document.getElementById('reviewForm').reset();
+    document.getElementById('ratingValue').value = 0;
+    document.querySelectorAll('#starRating .fa-star').forEach(star => {
+        star.className = 'far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition';
+    });
+    selectedRating = 0;
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Close modal on outside click
+document.getElementById('reviewModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReviewModal();
+    }
+});
+
+// Star rating hover effect
+document.querySelectorAll('#starRating .fa-star').forEach(star => {
+    star.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        const stars = document.querySelectorAll('#starRating .fa-star');
+        stars.forEach((s, index) => {
+            if (index < rating) {
+                s.className = 'fas fa-star text-amber-400 cursor-pointer hover:text-amber-500 transition';
+            } else {
+                s.className = 'far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition';
+            }
+        });
+    });
+    
+    star.addEventListener('mouseleave', function() {
+        const currentRating = parseInt(document.getElementById('ratingValue').value);
+        const stars = document.querySelectorAll('#starRating .fa-star');
+        stars.forEach((s, index) => {
+            if (index < currentRating) {
+                s.className = 'fas fa-star text-amber-500 cursor-pointer hover:text-amber-500 transition';
+            } else {
+                s.className = 'far fa-star text-gray-300 cursor-pointer hover:text-amber-500 transition';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,896 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Dashboard - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h2 class="text-3xl font-serif text-brand-dark">Dashboard</h2>
+        <p class="text-gray-500 text-sm mt-1">Welcome back, {{ current_user.username }}! Here's what's happening with your store.</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+            <i class="fas fa-check-circle mr-1"></i> Admin
+        </span>
+        
+        <span class="text-xs text-gray-400" id="liveIndicator">
+            <i class="fas fa-circle text-green-500 text-[8px] mr-1"></i> Live
+        </span>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Total Revenue</p>
+                <p class="text-2xl font-bold text-brand-dark mt-1" id="totalRevenue">₹0.00</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-lg">
+                <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-400">
+            <span id="totalOrdersText">0 orders</span>
+        </div>
+    </div>
+    
+    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Total Orders</p>
+                <p class="text-2xl font-bold text-brand-dark mt-1" id="totalOrders">0</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-lg">
+                <i class="fas fa-shopping-bag text-blue-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-400">
+            <span id="orderGrowth">0%</span> vs last month
+        </div>
+    </div>
+    
+    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Pending Orders</p>
+                <p class="text-2xl font-bold text-orange-500 mt-1" id="pendingOrders">0</p>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-lg">
+                <i class="fas fa-clock text-orange-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-400">
+            <span id="pendingStatus">All orders processed</span>
+        </div>
+    </div>
+    
+    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Products</p>
+                <p class="text-2xl font-bold text-brand-dark mt-1" id="totalProducts">{{ total_products|default(0) }}</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-lg">
+                <i class="fas fa-box text-purple-600 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-400">
+            <a href="/admin/products" class="text-purple-600 hover:underline">Manage products →</a>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Metrics -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="admin-card bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs uppercase tracking-wider font-semibold">Today's Revenue</p>
+                <p class="text-2xl font-bold text-green-700 mt-1" id="todayRevenue">₹0.00</p>
+            </div>
+            <div class="bg-green-200 p-3 rounded-lg">
+                <i class="fas fa-calendar-day text-green-700 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+            <span id="todayOrders">0 orders</span> today
+        </div>
+    </div>
+
+    <div class="admin-card bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs uppercase tracking-wider font-semibold">Yesterday's Revenue</p>
+                <p class="text-2xl font-bold text-blue-700 mt-1" id="yesterdayRevenue">₹0.00</p>
+            </div>
+            <div class="bg-blue-200 p-3 rounded-lg">
+                <i class="fas fa-calendar-day text-blue-700 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+            <span id="yesterdayOrders">0 orders</span> yesterday
+        </div>
+    </div>
+
+    <div class="admin-card bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-xl shadow-sm border border-purple-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs uppercase tracking-wider font-semibold">This Month Revenue</p>
+                <p class="text-2xl font-bold text-purple-700 mt-1" id="monthRevenue">₹0.00</p>
+            </div>
+            <div class="bg-purple-200 p-3 rounded-lg">
+                <i class="fas fa-calendar-alt text-purple-700 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+            <span id="monthOrders">0 orders</span> this month
+        </div>
+    </div>
+
+    <div class="admin-card bg-gradient-to-r from-amber-50 to-amber-100 p-6 rounded-xl shadow-sm border border-amber-200">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-xs uppercase tracking-wider font-semibold">This Year Revenue</p>
+                <p class="text-2xl font-bold text-amber-700 mt-1" id="yearRevenue">₹0.00</p>
+            </div>
+            <div class="bg-amber-200 p-3 rounded-lg">
+                <i class="fas fa-calendar text-amber-700 text-xl"></i>
+            </div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+            <span id="yearOrders">0 orders</span> this year
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-brand-dark text-lg">Weekly Orders</h3>
+            <span class="text-xs text-gray-400">Last 7 days</span>
+        </div>
+        <div style="height: 250px;">
+            <canvas id="ordersChart"></canvas>
+        </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-brand-dark text-lg">Weekly Revenue</h3>
+            <span class="text-xs text-gray-400">Last 7 days</span>
+        </div>
+        <div style="height: 250px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Order Status Distribution -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-brand-dark text-lg">Order Status Distribution</h3>
+            <a href="/admin/orders" class="text-sm text-brand-accent hover:underline">View All →</a>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Pending</span>
+                    <span class="font-semibold text-yellow-600" id="distPending">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-yellow-500 h-3 rounded-full transition-all duration-700" id="distPendingBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Confirmed</span>
+                    <span class="font-semibold text-blue-600" id="distConfirmed">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-700" id="distConfirmedBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Shipped</span>
+                    <span class="font-semibold text-purple-600" id="distShipped">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-purple-500 h-3 rounded-full transition-all duration-700" id="distShippedBar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Delivered</span>
+                    <span class="font-semibold text-green-600" id="distDelivered">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-green-500 h-3 rounded-full transition-all duration-700" id="distDeliveredBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 class="font-semibold text-brand-dark text-lg mb-4">Quick Stats</h3>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <span class="text-sm text-gray-600">Unread Messages</span>
+                <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardUnreadMessages">0</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <span class="text-sm text-gray-600">Pending Reviews</span>
+                <span class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardPendingReviews">0</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <span class="text-sm text-gray-600">Pending Orders</span>
+                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardPendingOrders">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Total Revenue</span>
+                <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardTotalRevenue">₹0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <a href="{{ url_for('admin_stock_management') }}" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Stock Management</p>
+                <p class="text-lg font-bold text-brand-dark mt-1 group-hover:text-brand-accent transition">Manage Stock</p>
+            </div>
+            <div class="bg-[#4d502c]/10 p-3 rounded-lg group-hover:bg-[#4d502c]/20 transition">
+                <i class="fas fa-boxes text-2xl text-[#4d502c]"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Quickly update product availability</p>
+    </a>
+
+    <a href="{{ url_for('admin_products') }}" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Products</p>
+                <p class="text-lg font-bold text-brand-dark mt-1 group-hover:text-brand-accent transition">Manage Products</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-lg group-hover:bg-purple-200 transition">
+                <i class="fas fa-box text-purple-600 text-xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Add, edit or remove products</p>
+    </a>
+
+    <a href="{{ url_for('admin_orders') }}" class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition group">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Orders</p>
+                <p class="text-lg font-bold text-brand-dark mt-1 group-hover:text-brand-accent transition">View Orders</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-lg group-hover:bg-blue-200 transition">
+                <i class="fas fa-shopping-bag text-blue-600 text-xl"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2" id="quickOrderStatus">All orders processed</p>
+    </a>
+</div>
+
+
+
+<!-- Order Status Summary -->
+<div class="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="font-semibold text-brand-dark text-lg">Order Status Summary</h3>
+        <span class="text-xs text-gray-400">Last updated: <span id="lastUpdated">Just now</span></span>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="text-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <p class="text-sm text-gray-500">Total</p>
+            <p class="text-xl font-bold text-brand-dark" id="summaryTotal">0</p>
+        </div>
+        <div class="text-center p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition">
+            <p class="text-sm text-yellow-600">Pending</p>
+            <p class="text-xl font-bold text-yellow-600" id="summaryPending">0</p>
+        </div>
+        <div class="text-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+            <p class="text-sm text-blue-600">Confirmed</p>
+            <p class="text-xl font-bold text-blue-600" id="summaryConfirmed">0</p>
+        </div>
+        <div class="text-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+            <p class="text-sm text-purple-600">Shipped</p>
+            <p class="text-xl font-bold text-purple-600" id="summaryShipped">0</p>
+        </div>
+        <div class="text-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition">
+            <p class="text-sm text-green-600">Delivered</p>
+            <p class="text-xl font-bold text-green-600" id="summaryDelivered">0</p>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// ==================== GLOBAL VARIABLES ====================
+var ordersChartInstance = null;
+var revenueChartInstance = null;
+var refreshInterval = null;
+var isFirstLoad = true;
+
+// ==================== FETCH REAL-TIME ANALYTICS ====================
+function fetchAnalyticsData() {
+    return fetch('/admin/analytics/data')
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .catch(function(error) {
+            console.error('Error fetching analytics:', error);
+            return null;
+        });
+}
+
+// ==================== FETCH RECENT ORDERS ====================
+function fetchRecentOrders() {
+    return fetch('/admin/recent-orders')
+        .then(function(response) {
+            if (!response.ok) throw new Error('Failed to fetch orders');
+            return response.json();
+        })
+        .then(function(data) {
+            // If data is an array, return it; if it has an error property, throw
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data;
+        })
+        .catch(function(error) {
+            console.error('Error fetching orders:', error);
+            return [];
+        });
+}
+
+// ==================== FETCH RECENT MESSAGES ====================
+function fetchRecentMessages() {
+    return fetch('/admin/recent-messages')
+        .then(function(response) {
+            if (!response.ok) throw new Error('Failed to fetch messages');
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data;
+        })
+        .catch(function(error) {
+            console.error('Error fetching messages:', error);
+            return [];
+        });
+}
+
+// ==================== UPDATE DASHBOARD ====================
+function updateDashboard(data) {
+    if (!data) return;
+    
+    // Update revenue metrics
+    document.getElementById('todayRevenue').textContent = '₹' + (data.today_revenue || 0).toFixed(2);
+    document.getElementById('yesterdayRevenue').textContent = '₹' + (data.yesterday_revenue || 0).toFixed(2);
+    document.getElementById('monthRevenue').textContent = '₹' + (data.month_revenue || 0).toFixed(2);
+    document.getElementById('yearRevenue').textContent = '₹' + (data.year_revenue || 0).toFixed(2);
+    
+    document.getElementById('todayOrders').textContent = (data.today_orders || 0) + ' orders';
+    document.getElementById('yesterdayOrders').textContent = (data.yesterday_orders || 0) + ' orders';
+    document.getElementById('monthOrders').textContent = (data.month_orders || 0) + ' orders';
+    document.getElementById('yearOrders').textContent = (data.year_orders || 0) + ' orders';
+    
+    // Update main stats
+    document.getElementById('totalRevenue').textContent = '₹' + (data.total_revenue || 0).toFixed(2);
+    document.getElementById('totalOrders').textContent = data.total_orders || 0;
+    document.getElementById('totalOrdersText').textContent = (data.total_orders || 0) + ' orders';
+    document.getElementById('pendingOrders').textContent = data.pending_orders || 0;
+    
+    // Update pending status
+    var pendingStatus = document.getElementById('pendingStatus');
+    if (data.pending_orders > 0) {
+        pendingStatus.innerHTML = '<span class="text-orange-500">⚠️ ' + data.pending_orders + ' orders need processing</span>';
+    } else {
+        pendingStatus.innerHTML = '<span class="text-green-600">✅ All orders processed</span>';
+    }
+    
+    // Update order growth
+    var growth = data.order_growth || 0;
+    var growthEl = document.getElementById('orderGrowth');
+    growthEl.textContent = (growth > 0 ? '+' : '') + growth.toFixed(1) + '%';
+    growthEl.style.color = growth >= 0 ? '#16a34a' : '#dc2626';
+    
+    // Update distribution
+    document.getElementById('distPending').textContent = data.pending_orders || 0;
+    document.getElementById('distConfirmed').textContent = data.confirmed_orders || 0;
+    document.getElementById('distShipped').textContent = data.shipped_orders || 0;
+    document.getElementById('distDelivered').textContent = data.delivered_orders || 0;
+    
+    // Update progress bars
+    var total = data.total_orders || 1;
+    document.getElementById('distPendingBar').style.width = ((data.pending_orders || 0) / total * 100).toFixed(1) + '%';
+    document.getElementById('distConfirmedBar').style.width = ((data.confirmed_orders || 0) / total * 100).toFixed(1) + '%';
+    document.getElementById('distShippedBar').style.width = ((data.shipped_orders || 0) / total * 100).toFixed(1) + '%';
+    document.getElementById('distDeliveredBar').style.width = ((data.delivered_orders || 0) / total * 100).toFixed(1) + '%';
+    
+    // Update summary
+    document.getElementById('summaryTotal').textContent = data.total_orders || 0;
+    document.getElementById('summaryPending').textContent = data.pending_orders || 0;
+    document.getElementById('summaryConfirmed').textContent = data.confirmed_orders || 0;
+    document.getElementById('summaryShipped').textContent = data.shipped_orders || 0;
+    document.getElementById('summaryDelivered').textContent = data.delivered_orders || 0;
+    
+    // Update quick stats
+    document.getElementById('dashboardUnreadMessages').textContent = data.unread_messages || 0;
+    document.getElementById('dashboardPendingReviews').textContent = data.pending_reviews || 0;
+    document.getElementById('dashboardPendingOrders').textContent = data.pending_orders || 0;
+    document.getElementById('dashboardTotalRevenue').textContent = '₹' + (data.total_revenue || 0).toFixed(2);
+    
+    // Update quick order status
+    var quickStatus = document.getElementById('quickOrderStatus');
+    if (data.pending_orders > 0) {
+        quickStatus.innerHTML = '<span class="text-orange-500">' + data.pending_orders + ' pending</span>';
+    } else {
+        quickStatus.textContent = 'All orders processed';
+    }
+    
+    // Update last updated time
+    var now = new Date();
+    document.getElementById('lastUpdated').textContent = now.toLocaleTimeString();
+    
+    // Update charts
+    updateCharts(data);
+}
+
+// ==================== UPDATE RECENT ORDERS ====================
+function updateRecentOrders(orders) {
+    var container = document.getElementById('recentOrdersContainer');
+    
+    // Check if orders is an array and has items
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
+                <p class="text-sm">No orders yet</p>
+                <p class="text-xs text-gray-400">Orders will appear here when customers place them</p>
+            </div>
+        `;
+        return;
+    }
+    
+    var html = '';
+    orders.forEach(function(order) {
+        var statusColors = {
+            'pending': 'bg-yellow-100 text-yellow-800',
+            'confirmed': 'bg-blue-100 text-blue-800',
+            'shipped': 'bg-purple-100 text-purple-800',
+            'delivered': 'bg-green-100 text-green-800',
+            'completed': 'bg-green-100 text-green-800',
+            'cancelled': 'bg-red-100 text-red-800'
+        };
+        var statusClass = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+        
+        var date = new Date(order.created_at);
+        var formattedDate = date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+        
+        var orderNumber = order.order_number || '#' + order.id;
+        var customerName = order.customer_name || 'Guest';
+        var totalAmount = parseFloat(order.total_amount || 0).toFixed(2);
+        var statusText = (order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1);
+        
+        html += `
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div>
+                    <a href="/admin/order/${order.id}" class="font-medium text-sm hover:text-brand-accent">
+                        ${orderNumber}
+                    </a>
+                    <p class="text-xs text-gray-500">${customerName}</p>
+                    <p class="text-xs text-gray-400">₹${totalAmount}</p>
+                </div>
+                <div class="text-right">
+                    <span class="status-badge ${statusClass} px-2 py-1 rounded-full text-xs font-semibold">
+                        ${statusText}
+                    </span>
+                    <p class="text-xs text-gray-400 mt-1">${formattedDate}</p>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// ==================== UPDATE RECENT MESSAGES ====================
+function updateRecentMessages(messages) {
+    var container = document.getElementById('recentMessagesContainer');
+    
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-envelope text-4xl text-gray-300 mb-3 block"></i>
+                <p class="text-sm">No messages yet</p>
+                <p class="text-xs text-gray-400">Customer messages will appear here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    var html = '';
+    messages.forEach(function(msg) {
+        var date = new Date(msg.created_at);
+        var formattedDate = date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+        var formattedTime = date.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        var name = msg.name || 'Anonymous';
+        var messageText = msg.message || '';
+        var truncatedMsg = messageText.substring(0, 60) + (messageText.length > 60 ? '...' : '');
+        var isNew = !msg.is_read;
+        
+        html += `
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm">${name}</p>
+                    <p class="text-xs text-gray-500 truncate">${truncatedMsg}</p>
+                    <p class="text-xs text-gray-400">${formattedDate} at ${formattedTime}</p>
+                </div>
+                <div class="ml-3 flex-shrink-0">
+                    ${isNew ? '<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full mr-2">New</span>' : ''}
+                    <a href="/admin/message/read/${msg.id}" class="text-sm text-brand-accent hover:underline">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// ==================== UPDATE CHARTS ====================
+function updateCharts(data) {
+    if (!data) return;
+    
+    var days = data.days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var orders = data.orders || [0, 0, 0, 0, 0, 0, 0];
+    var revenue = data.revenue || [0, 0, 0, 0, 0, 0, 0];
+    
+    // Update Orders Chart
+    if (ordersChartInstance) {
+        ordersChartInstance.data.labels = days;
+        ordersChartInstance.data.datasets[0].data = orders;
+        ordersChartInstance.update('none');
+    }
+    
+    // Update Revenue Chart
+    if (revenueChartInstance) {
+        revenueChartInstance.data.labels = days;
+        revenueChartInstance.data.datasets[0].data = revenue;
+        revenueChartInstance.update('none');
+    }
+}
+
+// ==================== INITIALIZE CHARTS ====================
+function initCharts() {
+    var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var defaultData = [0, 0, 0, 0, 0, 0, 0];
+    
+    // Orders Chart
+    var ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    ordersChartInstance = new Chart(ordersCtx, {
+        type: 'bar',
+        data: {
+            labels: days,
+            datasets: [{
+                label: 'Orders',
+                data: defaultData,
+                backgroundColor: 'rgba(77, 80, 44, 0.7)',
+                borderColor: '#4d502c',
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+    
+    // Revenue Chart
+    var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    revenueChartInstance = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: days,
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: defaultData,
+                backgroundColor: 'rgba(140, 98, 57, 0.1)',
+                borderColor: '#8c6239',
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: '#8c6239',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ==================== REFRESH ANALYTICS ====================
+function refreshAnalytics() {
+    var icon = document.getElementById('refreshIcon');
+    icon.classList.add('fa-spin');
+    
+    Promise.all([
+        fetchAnalyticsData(),
+        fetchRecentOrders(),
+        fetchRecentMessages()
+    ])
+    .then(function(results) {
+        var analyticsData = results[0];
+        var ordersData = results[1];
+        var messagesData = results[2];
+        
+        if (analyticsData) updateDashboard(analyticsData);
+        if (ordersData) updateRecentOrders(ordersData);
+        if (messagesData) updateRecentMessages(messagesData);
+        
+        icon.classList.remove('fa-spin');
+        showToast('✅ Dashboard updated successfully!');
+    })
+    .catch(function() {
+        icon.classList.remove('fa-spin');
+        showToast('❌ Error refreshing dashboard', 'error');
+    });
+}
+
+// ==================== TOAST NOTIFICATION ====================
+function showToast(message, type) {
+    type = type || 'success';
+    var existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'toast-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 text-white ' + (type === 'success' ? 'bg-green-600' : 'bg-red-600') + ' transition-all duration-300 transform translate-y-[-100px] max-w-md';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        toast.style.transform = 'translateY(0)';
+    }, 100);
+    
+    setTimeout(function() {
+        toast.style.transform = 'translateY(-100px)';
+        setTimeout(function() {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+// ==================== LIVE INDICATOR PULSE ====================
+function pulseLiveIndicator() {
+    var indicator = document.getElementById('liveIndicator');
+    if (indicator) {
+        indicator.innerHTML = '<i class="fas fa-circle text-green-500 text-[8px] mr-1 animate-pulse"></i> Live';
+    }
+}
+
+// ==================== AUTO-REFRESH ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    initCharts();
+    
+    // Load initial data
+    Promise.all([
+        fetchAnalyticsData(),
+        fetchRecentOrders(),
+        fetchRecentMessages()
+    ])
+    .then(function(results) {
+        var analyticsData = results[0];
+        var ordersData = results[1];
+        var messagesData = results[2];
+        
+        if (analyticsData) updateDashboard(analyticsData);
+        if (ordersData) updateRecentOrders(ordersData);
+        if (messagesData) updateRecentMessages(messagesData);
+        
+        pulseLiveIndicator();
+        isFirstLoad = false;
+    })
+    .catch(function(error) {
+        console.error('Error loading initial data:', error);
+        // Show error in containers
+        document.getElementById('recentOrdersContainer').innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-exclamation-circle text-4xl text-red-300 mb-3 block"></i>
+                <p class="text-sm">Error loading orders</p>
+                <p class="text-xs text-gray-400">Please refresh the page</p>
+            </div>
+        `;
+        document.getElementById('recentMessagesContainer').innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-exclamation-circle text-4xl text-red-300 mb-3 block"></i>
+                <p class="text-sm">Error loading messages</p>
+                <p class="text-xs text-gray-400">Please refresh the page</p>
+            </div>
+        `;
+    });
+    
+    // Auto-refresh every 15 seconds
+    refreshInterval = setInterval(function() {
+        Promise.all([
+            fetchAnalyticsData(),
+            fetchRecentOrders(),
+            fetchRecentMessages()
+        ])
+        .then(function(results) {
+            var analyticsData = results[0];
+            var ordersData = results[1];
+            var messagesData = results[2];
+            
+            if (analyticsData) updateDashboard(analyticsData);
+            if (ordersData) updateRecentOrders(ordersData);
+            if (messagesData) updateRecentMessages(messagesData);
+            
+            pulseLiveIndicator();
+        })
+        .catch(function() {});
+    }, 15000);
+});
+
+console.log('📊 Real-time Admin Dashboard loaded successfully');
+</script>
+
+<style>
+.status-badge {
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+.text-brand-dark { color: #1a1a1a; }
+.text-brand-accent { color: #8c6239; }
+.hover\:text-brand-accent:hover { color: #8c6239; }
+.bg-brand-accent\/10 { background: rgba(140, 98, 57, 0.1); }
+.bg-brand-accent\/20 { background: rgba(140, 98, 57, 0.2); }
+
+/* Progress bar animations */
+.bg-yellow-500, .bg-blue-500, .bg-purple-500, .bg-green-500 {
+    transition: width 0.8s ease-in-out;
+}
+
+/* Chart container */
+canvas {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+/* Admin card hover effects */
+.admin-card {
+    transition: all 0.3s ease;
+}
+.admin-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* Quick Stats hover effects */
+.bg-gray-50:hover, .bg-yellow-50:hover, .bg-blue-50:hover, .bg-purple-50:hover, .bg-green-50:hover {
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+}
+
+/* Toast notification */
+.toast-notification {
+    animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Live indicator pulse */
+.animate-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Scrollable containers */
+#recentOrdersContainer, #recentMessagesContainer {
+    scrollbar-width: thin;
+    scrollbar-color: #c5a880 #f1ede8;
+}
+#recentOrdersContainer::-webkit-scrollbar,
+#recentMessagesContainer::-webkit-scrollbar {
+    width: 4px;
+}
+#recentOrdersContainer::-webkit-scrollbar-track,
+#recentMessagesContainer::-webkit-scrollbar-track {
+    background: #f1ede8;
+    border-radius: 10px;
+}
+#recentOrdersContainer::-webkit-scrollbar-thumb,
+#recentMessagesContainer::-webkit-scrollbar-thumb {
+    background: #c5a880;
+    border-radius: 10px;
+}
+</style>
+{% endblock %}

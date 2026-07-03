@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-serif text-brand-dark mb-8">Complete Payment</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Order Summary -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-xl font-serif text-brand-dark mb-4">Order Summary</h2>
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+                {% for item in cart_items %}
+                <div class="flex justify-between border-b border-gray-100 pb-3">
+                    <div>
+                        <p class="font-medium">{{ item.product.name }}</p>
+                        <p class="text-sm text-gray-500">Qty: {{ item.quantity }} | Size: {{ item.size }}</p>
+                    </div>
+                    <p class="font-medium">₹{{ "%.2f"|format(item.product.price * item.quantity) }}</p>
+                </div>
+                {% endfor %}
+                
+                <!-- Subtotal -->
+                <div class="flex justify-between pt-2 text-sm border-t border-gray-100">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="font-medium">₹{{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                
+                <!-- Shipping -->
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Shipping</span>
+                    <span>
+                        {% if subtotal >= 2999 %}
+                        <span class="text-green-600 font-medium">Free</span>
+                        {% else %}
+                        <span class="font-medium">₹60.00</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Total -->
+                <div class="flex justify-between pt-3 font-bold text-lg border-t border-gray-200">
+                    <span>Total</span>
+                    <span class="text-[#4d502c]">
+                        ₹{{ "%.2f"|format(total) }}
+                    </span>
+                </div>
+
+                <!-- Free Shipping Progress -->
+                {% if subtotal < 2999 %}
+                <div class="mt-3 pt-2">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-[#4d502c] h-2 rounded-full transition-all duration-500" 
+                             style="width: {{ (subtotal / 2999 * 100)|round(1) if subtotal > 0 else 0 }}%"></div>
+                    </div>
+                    <p class="text-xs text-amber-600 mt-1">
+                        <i class="fas fa-truck mr-1"></i> 
+                        Add ₹{{ "%.2f"|format(2999 - subtotal) }} more for free shipping
+                    </p>
+                </div>
+                {% else %}
+                <div class="mt-3 pt-2">
+                    <p class="text-xs text-green-600 font-medium">
+                        <i class="fas fa-check-circle mr-1"></i> Free shipping applied
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="text-xs text-gray-400 text-center mt-2 pt-2 border-t border-gray-100">
+                    <i class="fas fa-lock mr-1"></i> Secure payment powered by Razorpay
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Form -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h2 class="text-xl font-serif text-brand-dark mb-4">Payment Details</h2>
+            
+            <form id="paymentForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                    <input type="text" id="customer_name" value="{{ order.customer_name }}" 
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                    <input type="email" id="customer_email" value="{{ order.customer_email }}" 
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                    <input type="tel" id="customer_phone" value="{{ order.customer_phone }}" 
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] outline-none transition">
+                </div>
+                
+                <!-- Payment Methods -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" class="payment-method active px-3 py-2 border-2 border-[#4d502c] rounded-lg text-sm font-medium text-[#4d502c] bg-[#4d502c]/5 hover:bg-[#4d502c]/10 transition" data-method="card">
+                            <i class="fas fa-credit-card block text-lg mb-1"></i>
+                            Card
+                        </button>
+                        <button type="button" class="payment-method px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:border-[#4d502c] hover:text-[#4d502c] transition" data-method="upi">
+                            <i class="fas fa-mobile-alt block text-lg mb-1"></i>
+                            UPI
+                        </button>
+                        <button type="button" class="payment-method px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:border-[#4d502c] hover:text-[#4d502c] transition" data-method="netbanking">
+                            <i class="fas fa-university block text-lg mb-1"></i>
+                            NetBanking
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="button" id="payBtn" 
+                        class="w-full bg-[#4d502c] text-white py-3.5 rounded-lg hover:bg-[#3d4022] transition font-medium text-lg">
+                    <i class="fas fa-credit-card mr-2"></i> Pay ₹{{ "%.2f"|format(total) }}
+                </button>
+            </form>
+            
+            <div class="mt-6 flex items-center justify-center gap-6 text-xs text-gray-400">
+                <span><i class="fas fa-lock text-green-600 mr-1"></i> Secure</span>
+                <span><i class="fas fa-shield-alt text-green-600 mr-1"></i> Encrypted</span>
+                <span><i class="fas fa-check-circle text-green-600 mr-1"></i> Trusted</span>
+            </div>
+            
+            <div class="mt-4 flex justify-center gap-4 flex-wrap">
+                <img src="https://cdn.simpleicons.org/razorpay/000000" alt="Razorpay" class="h-6 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/visa/1a1f71" alt="Visa" class="h-5 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/mastercard/eb001b" alt="Mastercard" class="h-5 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/upi/0066b3" alt="UPI" class="h-5 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/googlepay/4285f4" alt="Google Pay" class="h-5 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/phonepe/5f259f" alt="PhonePe" class="h-5 opacity-60" onerror="this.style.display='none'">
+                <img src="https://cdn.simpleicons.org/paytm/003b70" alt="Paytm" class="h-5 opacity-60" onerror="this.style.display='none'">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Footer -->
+ <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Follow Us Section -->
+        <div class="text-center mb-6">
+            <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
+            <div class="flex justify-center gap-6">
+                <a href="https://www.facebook.com/share/18hECcHyk6/" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Facebook">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/olivintraa?igsh=dTV5YmIwZzhqcW03" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <!-- You can add more social icons here -->
+            </div>
+        </div>
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div class="md:col-span-4 space-y-3">
+            <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
+            <p class="text-gray-400 max-w-xs leading-relaxed">Timeless fashion for every moment. Beautifully designed ethnic wear tailored with precision and premium craftsmanship.</p>
+        </div>
+        <div class="md:col-span-2 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Shop</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/shop" class="hover:text-white transition">All Products</a></li>
+                <li><a href="/new-arrivals" class="hover:text-white transition">New Arrivals</a></li>
+                <li><a href="/best-sellers" class="hover:text-white transition">Best Sellers</a></li>
+                <li><a href="/my-orders" class="hover:text-white transition">My Orders</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Contact</h4>
+            <ul class="space-y-1.5 text-gray-400">
+                <li><span class="font-medium text-gray-300 text-[11px]">942P+WJX Parassala,<br>Kerala, India</span></li>
+                <li><a href="tel:+919037392700" class="hover:text-white transition">+91 90373 92700</a></li>
+                <li><a href="mailto:olivintra@gmail.com" class="hover:text-white transition text-[11px]">olivintra@gmail.com</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Quick Links</h4>
+            <ul class="space-y-1.5">
+                 <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+                <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
+                <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
+                <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800 mt-8 sm:mt-12 pt-6 text-center text-gray-600 text-[10px] sm:text-xs">
+        &copy; 2026 Olivintra. All Rights Reserved.
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var payBtn = document.getElementById('payBtn');
+    var orderId = Number('{{ order.id }}');
+    var totalAmount = Number('{{ total }}');
+    var subtotalAmount = Number('{{ subtotal }}');
+    var shippingAmount = subtotalAmount >= 2999 ? 0 : 60;
+    var grandTotal = totalAmount; // total already includes shipping
+    var logoUrl = '{{ url_for("static", filename="uploads/logo.jpg") }}';
+    var selectedMethod = 'card';
+    
+    // Payment method selection
+    document.querySelectorAll('.payment-method').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.payment-method').forEach(function(b) {
+                b.classList.remove('active', 'border-[#4d502c]', 'text-[#4d502c]', 'bg-[#4d502c]/5');
+                b.classList.add('border-gray-200', 'text-gray-500');
+            });
+            this.classList.add('active', 'border-[#4d502c]', 'text-[#4d502c]', 'bg-[#4d502c]/5');
+            this.classList.remove('border-gray-200', 'text-gray-500');
+            selectedMethod = this.dataset.method;
+            
+            // Update button text
+            var methodLabels = {
+                'card': 'Pay with Card',
+                'upi': 'Pay with UPI/GPay',
+                'netbanking': 'Pay with NetBanking'
+            };
+            payBtn.innerHTML = '<i class="fas fa-credit-card mr-2"></i> ' + methodLabels[selectedMethod] + ' ₹' + grandTotal.toFixed(2);
+        });
+    });
+    
+    payBtn.addEventListener('click', function() {
+        var customerName = document.getElementById('customer_name').value.trim();
+        var customerEmail = document.getElementById('customer_email').value.trim();
+        var customerPhone = document.getElementById('customer_phone').value.trim();
+        
+        if (!customerName || !customerEmail || !customerPhone) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        // Disable button to prevent double click
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+        
+        // Initiate payment
+        fetch('/payment/initiate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                amount: grandTotal,
+                customer_name: customerName,
+                customer_email: customerEmail,
+                customer_phone: customerPhone
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                // Open Razorpay checkout
+                var options = {
+                    key: data.key_id,
+                    amount: data.amount * 100,
+                    currency: data.currency,
+                    name: "Olivintra",
+                    description: "Order #" + orderId,
+                    image: logoUrl,
+                    order_id: data.order_id,
+                    prefill: {
+                        name: data.customer_name,
+                        email: data.customer_email,
+                        contact: data.customer_phone
+                    },
+                    theme: {
+                        color: "#4d502c"
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            payBtn.disabled = false;
+                            payBtn.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay ₹' + grandTotal.toFixed(2);
+                        }
+                    },
+                    handler: function(response) {
+                        // Verify payment
+                        fetch('/payment/verify', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        })
+                        .then(function(res) {
+                            return res.json();
+                        })
+                        .then(function(verifyData) {
+                            if (verifyData.success) {
+                                window.location.href = '/payment/success/' + verifyData.order_id;
+                            } else {
+                                window.location.href = '/payment/failed/' + orderId;
+                            }
+                        })
+                        .catch(function() {
+                            window.location.href = '/payment/failed/' + orderId;
+                        });
+                    }
+                };
+                var rzp = new Razorpay(options);
+                rzp.open();
+            } else {
+                alert('Error: ' + data.error);
+                payBtn.disabled = false;
+                payBtn.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay ₹' + grandTotal.toFixed(2);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('Payment initiation failed. Please try again.');
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay ₹' + grandTotal.toFixed(2);
+        });
+    });
+});
+</script>
+
+<style>
+.payment-method {
+    cursor: pointer;
+    min-height: 56px;
+    transition: all 0.3s ease;
+}
+.payment-method.active {
+    border-color: #4d502c !important;
+    color: #4d502c !important;
+    background: rgba(77, 80, 44, 0.05) !important;
+}
+.payment-method:hover:not(.active) {
+    border-color: #4d502c;
+    color: #4d502c;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+<section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 text-center">
+    <div class="bg-green-50 border border-green-200 rounded-lg p-8 mb-6">
+        <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+        <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark mb-2">Order Confirmed! 🎉</h1>
+        <p class="text-gray-600 mb-4">Thank you for your order! We'll ship it soon.</p>
+        <p class="text-sm text-gray-500">Order #: <span class="font-semibold">{{ order.order_number }}</span></p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg border border-gray-200 text-left">
+        <h2 class="font-semibold text-brand-dark mb-4">Order Details</h2>
+        <div class="space-y-2 text-sm">
+            <p><span class="font-medium">Customer:</span> {{ order.customer_name }}</p>
+            <p><span class="font-medium">Email:</span> {{ order.customer_email }}</p>
+            <p><span class="font-medium">Phone:</span> {{ order.customer_phone }}</p>
+            <p><span class="font-medium">Address:</span> {{ order.shipping_address }}</p>
+            {% if order.city %}<p><span class="font-medium">City:</span> {{ order.city }}</p>{% endif %}
+            {% if order.state %}<p><span class="font-medium">State:</span> {{ order.state }}</p>{% endif %}
+            {% if order.pincode %}<p><span class="font-medium">Pincode:</span> {{ order.pincode }}</p>{% endif %}
+            <p><span class="font-medium">Payment Method:</span> {{ order.payment_method }}</p>
+            <p><span class="font-medium">Total:</span> ₹{{ "%.2f"|format(order.total_amount) }}</p>
+        </div>
+    </div>
+
+    <!-- WhatsApp Support -->
+    <div class="mt-6 p-4 bg-[#4d502c]/10 border border-[#4d502c]/20 rounded-lg text-center">
+        <p class="text-sm text-gray-600 mb-2">Have questions about your order?</p>
+        <a href="{{ whatsapp_url }}?text=Hi! I have a question about my order #{{ order.order_number }}" 
+           target="_blank" 
+           class="inline-flex items-center justify-center gap-2 bg-[#4d502c] text-white px-6 py-3 rounded-lg hover:bg-[#3d4022] transition">
+            <i class="fab fa-whatsapp text-xl"></i>
+            <span>Contact us on WhatsApp</span>
+        </a>
+        <p class="text-xs text-gray-400 mt-2">We'll respond within 24 hours</p>
+    </div>
+
+    <div class="mt-6 space-x-4">
+        <a href="/" class="bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition inline-block">
+            Continue Shopping
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+ <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Follow Us Section -->
+        <div class="text-center mb-6">
+            <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
+            <div class="flex justify-center gap-6">
+                <a href="https://www.facebook.com/share/18hECcHyk6/" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Facebook">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/olivintraa?igsh=dTV5YmIwZzhqcW03" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <!-- You can add more social icons here -->
+            </div>
+        </div>
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div class="md:col-span-4 space-y-3">
+            <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
+            <p class="text-gray-400 max-w-xs leading-relaxed">Timeless fashion for every moment. Beautifully designed ethnic wear tailored with precision and premium craftsmanship.</p>
+        </div>
+        <div class="md:col-span-2 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Shop</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/shop" class="hover:text-white transition">All Products</a></li>
+                <li><a href="/new-arrivals" class="hover:text-white transition">New Arrivals</a></li>
+                <li><a href="/best-sellers" class="hover:text-white transition">Best Sellers</a></li>
+                <li><a href="/my-orders" class="hover:text-white transition">My Orders</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Contact</h4>
+            <ul class="space-y-1.5 text-gray-400">
+                <li><span class="font-medium text-gray-300 text-[11px]">942P+WJX Parassala,<br>Kerala, India</span></li>
+                <li><a href="tel:+919037392700" class="hover:text-white transition">+91 90373 92700</a></li>
+                <li><a href="mailto:olivintra@gmail.com" class="hover:text-white transition text-[11px]">olivintra@gmail.com</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Quick Links</h4>
+            <ul class="space-y-1.5">
+                 <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+                <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
+                <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
+                <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800 mt-8 sm:mt-12 pt-6 text-center text-gray-600 text-[10px] sm:text-xs">
+        &copy; 2026 Olivintra. All Rights Reserved.
+    </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Hero Slides - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h2 class="text-2xl font-serif text-brand-dark">Hero Slides</h2>
+        <p class="text-gray-500 text-sm">Manage homepage hero slider images and content</p>
+    </div>
+    <a href="/admin/hero/add" class="bg-brand-dark text-white px-4 py-2 rounded hover:bg-brand-accent transition text-sm">
+        <i class="fas fa-plus mr-2"></i> Add Slide
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtitle</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for slide in slides %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="w-16 h-12 bg-gray-100 rounded overflow-hidden">
+                            <div class="w-full h-full bg-cover bg-center"
+                                 style="background-image: url('{% if slide.image %}{{ url_for('static', filename='uploads/' + slide.image) }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=No{% endif %}');">
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-brand-dark">{{ slide.title[:30] }}{% if slide.title|length > 30 %}...{% endif %}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ slide.subtitle[:20] }}{% if slide.subtitle|length > 20 %}...{% endif %}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ slide.order }}</td>
+                    <td class="px-6 py-4">
+                        <span class="status-badge {% if slide.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ 'Active' if slide.is_active else 'Inactive' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <a href="/admin/hero/edit/{{ slide.id }}" class="text-brand-accent hover:bg-brand-accent/10 p-2 rounded-lg transition" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <!-- Toggle Status - Now properly links to toggle route -->
+                            <a href="/admin/hero/toggle/{{ slide.id }}" class="{% if slide.is_active %}text-yellow-600 hover:bg-yellow-50{% else %}text-green-600 hover:bg-green-50{% endif %} p-2 rounded-lg transition" title="{% if slide.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                <i class="fas {% if slide.is_active %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                            </a>
+                            <a href="/admin/hero/delete/{{ slide.id }}" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Delete" onclick="return confirm('Delete this slide?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-image text-4xl text-gray-300 mb-4 block"></i>
+                        <p class="text-lg font-medium">No hero slides found</p>
+                        <p class="text-sm mt-1">Add your first hero slide to display on the homepage</p>
+                        <a href="/admin/hero/add" class="inline-block mt-4 bg-brand-dark text-white px-5 py-2 rounded hover:bg-brand-accent transition">
+                            <i class="fas fa-plus mr-2"></i> Add Slide
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

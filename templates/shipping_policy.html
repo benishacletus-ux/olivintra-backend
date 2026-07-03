@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-serif text-brand-dark mb-6">Shipping Policy</h1>
+    <p class="text-gray-500 text-sm mb-8">Last Updated: June 29, 2026</p>
+
+    <div class="space-y-6 text-gray-700 leading-relaxed">
+        <section>
+            <h2 class="text-xl font-serif text-brand-dark mb-3">1. Shipping Charges</h2>
+            <ul class="list-disc pl-6 space-y-2">
+                <li><strong>Free Shipping:</strong> On orders above ₹4999</li>
+                <li><strong>Standard Shipping:</strong> ₹99 for orders below ₹4999</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-serif text-brand-dark mb-3">2. Delivery Time</h2>
+            <ul class="list-disc pl-6 space-y-2">
+                <li><strong>Kerala:</strong> 2-4 business days</li>
+                <li><strong>Rest of India:</strong> 5-7 business days</li>
+                <li>Orders are processed within 24-48 hours</li>
+                <li>You will receive tracking details via email</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-serif text-brand-dark mb-3">3. Shipping Partners</h2>
+            <p>We work with trusted shipping partners including:</p>
+            <ul class="list-disc pl-6 space-y-2">
+                <li>DTDC</li>
+                <li>Bluedart</li>
+                <li>XpressBees</li>
+                <li>Delhivery</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-serif text-brand-dark mb-3">4. Order Tracking</h2>
+            <p>Once your order is shipped, you will receive:</p>
+            <ul class="list-disc pl-6 space-y-2">
+                <li>Email with tracking number</li>
+                <li>SMS with delivery updates</li>
+                <li>Track via "My Orders" page</li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="mt-8 pt-4 border-t border-gray-200">
+        <a href="/" class="text-[#4d502c] hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Store
+        </a>
+    </div>
+</div>
+{% endblock %}

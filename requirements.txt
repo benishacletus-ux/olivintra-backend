@@ -1,0 +1,50 @@
+# Core Flask
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-WTF==1.1.1
+Flask-Migrate==4.0.5
+Flask-Cors==4.0.1
+
+# Core Dependencies
+Werkzeug==2.3.8
+WTForms==3.1.2
+Jinja2==3.1.2
+MarkupSafe==2.1.5
+click==8.1.7
+itsdangerous==2.1.2
+
+# Database
+SQLAlchemy==2.0.23
+alembic==1.13.1
+
+# Payment Integration - FIXED VERSION
+razorpay==1.4.2
+
+# Image Processing
+Pillow==10.4.0
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# Validation
+email-validator==2.1.1
+
+# HTTP Client (for API calls)
+requests==2.31.0
+
+# JSON Web Token (optional, for API authentication)
+PyJWT==2.8.0
+
+# Debugging & Development
+python-magic==0.4.27
+
+# Production Server
+gunicorn==21.2.0
+
+# Security
+bcrypt==4.1.2
+cryptography==41.0.7
+
+# Utilities
+python-dateutil==2.8.2

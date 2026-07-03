@@ -1,0 +1,89 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Order #{{ order.order_number }} - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+        <h2 class="text-2xl font-serif text-brand-dark">Order #{{ order.order_number }}</h2>
+        <p class="text-gray-500 text-sm">Placed on {{ order.created_at.strftime('%d %b %Y at %I:%M %p') }}</p>
+    </div>
+    <a href="/admin/orders" class="text-brand-accent hover:underline text-sm">
+        <i class="fas fa-arrow-left mr-1"></i> Back to Orders
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Order Items -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="font-semibold text-brand-dark text-lg mb-4">Order Items</h3>
+            <div class="space-y-3">
+                {% for item in order.items %}
+                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                    <div>
+                        <p class="font-medium">{{ item.product_name }}</p>
+                        <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
+                    </div>
+                    <p class="font-semibold">₹{{ "%.2f"|format(item.price * item.quantity) }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="border-t border-gray-200 pt-4 mt-4">
+                <div class="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span>₹{{ "%.2f"|format(order.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Notes -->
+        {% if order.notes %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="font-semibold text-brand-dark text-lg mb-2">Order Notes</h3>
+            <p class="text-gray-600">{{ order.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Order Info Sidebar -->
+    <div class="space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="font-semibold text-brand-dark text-lg mb-4">Customer Information</h3>
+            <div class="space-y-2 text-sm">
+                <p><span class="font-medium">Name:</span> {{ order.customer_name }}</p>
+                <p><span class="font-medium">Email:</span> {{ order.customer_email }}</p>
+                <p><span class="font-medium">Phone:</span> {{ order.customer_phone }}</p>
+                <hr class="my-2">
+                <p><span class="font-medium">Address:</span></p>
+                <p class="text-gray-600">{{ order.shipping_address }}</p>
+                {% if order.city %}<p class="text-gray-600">{{ order.city }}, {{ order.state }} - {{ order.pincode }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="font-semibold text-brand-dark text-lg mb-4">Update Status</h3>
+            <form method="POST" action="/admin/order/update-status/{{ order.id }}">
+                <select name="status" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none transition mb-3 bg-white">
+                    <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                    <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                    <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button type="submit" class="w-full bg-brand-dark text-white py-2.5 rounded-lg hover:bg-brand-accent transition font-medium">
+                    <i class="fas fa-sync mr-2"></i> Update Status
+                </button>
+            </form>
+            <div class="mt-4 pt-4 border-t border-gray-200 text-sm">
+                <p><span class="font-medium">Payment Method:</span> {{ order.payment_method }}</p>
+                <p><span class="font-medium">Payment Status:</span> 
+                    <span class="status-badge {% if order.payment_status == 'paid' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ order.payment_status }}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

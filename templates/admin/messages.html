@@ -1,0 +1,70 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Messages - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-6">
+    <h2 class="text-2xl font-serif text-brand-dark">Messages</h2>
+    <p class="text-gray-500 text-sm">Customer inquiries and messages</p>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for msg in messages %}
+                <tr class="hover:bg-gray-50 transition {% if not msg.is_read %}bg-yellow-50{% endif %}">
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium">{{ msg.name }}</div>
+                        <div class="text-xs text-gray-500">{{ msg.email }}</div>
+                        {% if msg.phone %}
+                        <div class="text-xs text-gray-400">{{ msg.phone }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm max-w-xs">{{ msg.message[:80] }}{% if msg.message|length > 80 %}...{% endif %}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ msg.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="status-badge {% if msg.is_read %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ 'Read' if msg.is_read else 'Unread' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            {% if not msg.is_read %}
+                            <a href="/admin/message/read/{{ msg.id }}" class="text-green-600 hover:bg-green-50 p-2 rounded-lg transition" title="Mark as read">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            {% endif %}
+                            <a href="/admin/message/delete/{{ msg.id }}" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Delete" onclick="return confirm('Delete this message?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-envelope-open text-4xl text-gray-300 mb-4 block"></i>
+                        <p class="text-lg font-medium">No messages</p>
+                        <p class="text-sm mt-1">Customer messages will appear here</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

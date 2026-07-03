@@ -1,0 +1,435 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Stock Management - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-8">
+    <h2 class="text-3xl font-serif text-brand-dark">Stock Management</h2>
+    <p class="text-gray-500 text-sm mt-1">Manage product availability across your store.</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Total Products</p>
+        <p class="text-2xl font-bold text-brand-dark mt-1">{{ products|length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">In Stock</p>
+        <p class="text-2xl font-bold text-green-600 mt-1">{{ products|selectattr('in_stock', 'equalto', True)|list|length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Out of Stock</p>
+        <p class="text-2xl font-bold text-red-600 mt-1">{{ products|selectattr('in_stock', 'equalto', False)|list|length }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Low Stock (&lt; 10)</p>
+        <p class="text-2xl font-bold text-orange-500 mt-1">{{ products|selectattr('stock', 'lessthan', 10)|list|length }}</p>
+    </div>
+</div>
+
+<!-- Stock Management Panel -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-[#1a1a1a] text-white px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-boxes text-xl"></i>
+            <h2 class="text-lg font-semibold">Product Stock Status</h2>
+            <span class="admin-badge bg-[#4d502c] text-white px-3 py-1 rounded-full text-xs font-semibold">Admin</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="refreshStock()" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded transition">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button onclick="saveAllChanges()" class="text-sm bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded transition">
+                <i class="fas fa-save mr-1"></i> Save All
+            </button>
+        </div>
+    </div>
+    
+    <div class="p-6">
+        <!-- Instructions -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-blue-800">How to manage stock:</p>
+                    <ul class="text-sm text-blue-700 mt-1 space-y-1">
+                        <li>• <span class="font-medium text-green-600">Green toggle (ON)</span> = Product is <span class="font-medium">In Stock</span></li>
+                        <li>• <span class="font-medium text-gray-500">Gray toggle (OFF)</span> = Product is <span class="font-medium text-red-600">Out of Stock</span></li>
+                        <li>• Click toggle to update status instantly</li>
+                        <li>• Changes are saved automatically to the database</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product List -->
+        <div class="overflow-x-auto">
+            <div class="min-w-full">
+                <!-- Header -->
+                <div class="grid grid-cols-6 gap-4 px-4 py-3 bg-gray-50 rounded-lg font-semibold text-sm text-gray-600 border-b">
+                    <div>Image</div>
+                    <div>Product</div>
+                    <div>Price</div>
+                    <div>Stock</div>
+                    <div>Status</div>
+                    <div class="text-center">Toggle</div>
+                </div>
+                
+                <!-- Product Rows -->
+                <div id="productList">
+                    {% for product in products %}
+                    <div class="grid grid-cols-6 gap-4 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition items-center" data-product-id="{{ product.id }}">
+                        <!-- Image -->
+                        <div>
+                            {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="w-12 h-12 object-cover rounded">
+                            {% else %}
+                            <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Product Name -->
+                        <div>
+                            <div class="font-medium text-sm text-brand-dark">{{ product.name }}</div>
+                            <div class="text-xs text-gray-400">SKU: {{ product.slug[:12] }}</div>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="font-medium text-[#4d502c]">₹{{ "%.2f"|format(product.price) }}</div>
+                        
+                        <!-- Stock -->
+                        <div>
+                            <span class="text-sm {% if product.stock > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {{ product.stock }}
+                            </span>
+                            {% if product.stock < 10 and product.stock > 0 %}
+                            <span class="text-xs text-orange-500 ml-1">(Low)</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Status -->
+                        <div>
+                            <span class="stock-status text-sm font-medium {% if product.in_stock %}text-green-600{% else %}text-red-600{% endif %}" id="status-{{ product.id }}">
+                                <i class="fas {% if product.in_stock %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                {% if product.in_stock %}In Stock{% else %}Out of Stock{% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Toggle -->
+                        <div class="flex justify-center">
+                            <div class="stock-toggle {% if product.in_stock %}active{% endif %}" onclick="toggleStock({{ product.id }})" id="toggle-{{ product.id }}">
+                                <span class="slider"></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex flex-wrap gap-3 items-center">
+                <span class="text-sm font-medium">Bulk Actions:</span>
+                <button onclick="bulkUpdate(true)" class="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition">
+                    <i class="fas fa-check mr-1"></i> Set All In Stock
+                </button>
+                <button onclick="bulkUpdate(false)" class="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition">
+                    <i class="fas fa-times mr-1"></i> Set All Out of Stock
+                </button>
+                <button onclick="resetToCurrent()" class="px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 transition">
+                    <i class="fas fa-undo mr-1"></i> Reset Changes
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" style="display:none;" class="mt-4 text-center">
+            <div class="inline-flex items-center gap-2 text-gray-500">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Saving changes...</span>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="mt-4 text-center text-sm" style="display:none;"></div>
+    </div>
+</div>
+
+<style>
+    .stock-toggle {
+        position: relative;
+        width: 50px;
+        height: 26px;
+        background: #ccc;
+        border-radius: 13px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .stock-toggle.active {
+        background: #4d502c;
+    }
+    .stock-toggle .slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .stock-toggle.active .slider {
+        left: 27px;
+    }
+    .stock-toggle:hover {
+        opacity: 0.9;
+    }
+    .stock-toggle:active .slider {
+        width: 24px;
+    }
+    .admin-badge {
+        background: #4d502c;
+        color: white;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    @media (max-width: 768px) {
+        .grid-cols-6 {
+            grid-template-columns: 40px 1fr 60px 50px 80px 50px;
+            font-size: 12px;
+            gap: 8px;
+        }
+        .w-12 {
+            width: 35px;
+            height: 35px;
+        }
+    }
+</style>
+
+<script>
+// ==================== STOCK MANAGEMENT ====================
+var pendingChanges = {};
+
+function toggleStock(productId) {
+    var toggle = document.getElementById('toggle-' + productId);
+    var status = document.getElementById('status-' + productId);
+    
+    if (!toggle || !status) return;
+    
+    // Toggle state
+    var isActive = toggle.classList.contains('active');
+    var newState = !isActive;
+    
+    // Update UI immediately
+    if (newState) {
+        toggle.classList.add('active');
+        status.className = 'stock-status text-sm font-medium text-green-600';
+        status.innerHTML = '<i class="fas fa-check-circle"></i> In Stock';
+    } else {
+        toggle.classList.remove('active');
+        status.className = 'stock-status text-sm font-medium text-red-600';
+        status.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+    }
+    
+    // Track change
+    pendingChanges[productId] = newState;
+    
+    // Update row visual
+    var row = document.querySelector('[data-product-id="' + productId + '"]');
+    if (row) {
+        if (newState) {
+            row.style.opacity = '1';
+        } else {
+            row.style.opacity = '0.6';
+        }
+    }
+    
+    // Show status message
+    showStatus('Pending changes: ' + Object.keys(pendingChanges).length + ' product(s)', 'info');
+    
+    // Auto-save after 1.5 seconds of no changes
+    clearTimeout(window._saveTimeout);
+    window._saveTimeout = setTimeout(function() {
+        saveChanges();
+    }, 1500);
+}
+
+function saveChanges() {
+    if (Object.keys(pendingChanges).length === 0) {
+        showStatus('No changes to save', 'info');
+        return;
+    }
+    
+    var loading = document.getElementById('loadingIndicator');
+    var statusMsg = document.getElementById('statusMessage');
+    loading.style.display = 'block';
+    showStatus('Saving changes...', 'info');
+    
+    var updates = Object.keys(pendingChanges).map(function(id) {
+        return {
+            product_id: parseInt(id),
+            in_stock: pendingChanges[id]
+        };
+    });
+    
+    fetch('/admin/product/bulk-update-stock', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ updates: updates })
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        loading.style.display = 'none';
+        if (data.success) {
+            showStatus('✅ ' + data.message, 'success');
+            pendingChanges = {};
+            // Update stats
+            updateStats();
+        } else {
+            showStatus('❌ Error: ' + (data.error || 'Failed to save'), 'error');
+        }
+    })
+    .catch(function(error) {
+        loading.style.display = 'none';
+        showStatus('❌ Error: ' + error.message, 'error');
+        console.error('Error:', error);
+    });
+}
+
+function saveAllChanges() {
+    saveChanges();
+}
+
+function bulkUpdate(inStock) {
+    var count = document.querySelectorAll('[data-product-id]').length;
+    if (!confirm('Set ALL ' + count + ' products to ' + (inStock ? 'In Stock' : 'Out of Stock') + '?')) return;
+    
+    var products = document.querySelectorAll('[data-product-id]');
+    products.forEach(function(row) {
+        var productId = row.dataset.productId;
+        if (productId) {
+            var toggle = document.getElementById('toggle-' + productId);
+            var status = document.getElementById('status-' + productId);
+            
+            if (toggle && status) {
+                if (inStock) {
+                    toggle.classList.add('active');
+                    status.className = 'stock-status text-sm font-medium text-green-600';
+                    status.innerHTML = '<i class="fas fa-check-circle"></i> In Stock';
+                    row.style.opacity = '1';
+                } else {
+                    toggle.classList.remove('active');
+                    status.className = 'stock-status text-sm font-medium text-red-600';
+                    status.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+                    row.style.opacity = '0.6';
+                }
+                pendingChanges[productId] = inStock;
+            }
+        }
+    });
+    
+    showStatus('Pending changes: ' + Object.keys(pendingChanges).length + ' product(s)', 'info');
+    saveChanges();
+}
+
+function resetToCurrent() {
+    if (Object.keys(pendingChanges).length === 0) {
+        showStatus('ℹ️ No changes to reset', 'info');
+        return;
+    }
+    
+    if (!confirm('Reset all pending changes? This will reload the page.')) return;
+    window.location.reload();
+}
+
+function refreshStock() {
+    showStatus('🔄 Refreshing...', 'info');
+    window.location.reload();
+}
+
+function updateStats() {
+    // Refresh the page to update stats
+    setTimeout(function() {
+        window.location.reload();
+    }, 500);
+}
+
+// ==================== STATUS MESSAGE ====================
+function showStatus(message, type) {
+    var statusMsg = document.getElementById('statusMessage');
+    if (!statusMsg) return;
+    
+    statusMsg.style.display = 'block';
+    statusMsg.textContent = message;
+    
+    // Clear previous classes
+    statusMsg.className = 'mt-4 text-center text-sm';
+    
+    // Add type class
+    if (type === 'success') {
+        statusMsg.classList.add('text-green-600');
+    } else if (type === 'error') {
+        statusMsg.classList.add('text-red-600');
+    } else if (type === 'info') {
+        statusMsg.classList.add('text-blue-600');
+    }
+    
+    // Auto-hide after 5 seconds for non-info messages
+    if (type !== 'info') {
+        clearTimeout(statusMsg._hideTimeout);
+        statusMsg._hideTimeout = setTimeout(function() {
+            statusMsg.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// ==================== AUTO-SAVE ON UNLOAD ====================
+window.addEventListener('beforeunload', function(e) {
+    if (Object.keys(pendingChanges).length > 0) {
+        // Save synchronously before leaving
+        navigator.sendBeacon('/admin/product/bulk-update-stock', JSON.stringify({
+            updates: Object.keys(pendingChanges).map(function(id) {
+                return {
+                    product_id: parseInt(id),
+                    in_stock: pendingChanges[id]
+                };
+            })
+        }));
+    }
+});
+
+// ==================== KEYBOARD SHORTCUTS ====================
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S to save
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        saveAllChanges();
+    }
+    // Escape to reset
+    if (e.key === 'Escape') {
+        resetToCurrent();
+    }
+});
+
+console.log('💡 Keyboard shortcuts:');
+console.log('  Ctrl+S  - Save all changes');
+console.log('  Escape  - Reset changes');
+console.log('  Click toggles - Auto-save after 1.5 seconds');
+
+// Initialize - show welcome message
+console.log('✅ Stock Management loaded successfully');
+</script>
+{% endblock %}

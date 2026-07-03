@@ -1,0 +1,494 @@
+{% extends "admin/base_admin.html" %}
+
+
+
+{% block admin_content %}
+<div class="mb-4 md:mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-serif text-brand-dark">Add Product</h2>
+            <p class="text-gray-500 text-xs md:text-sm mt-1">Create a new product</p>
+        </div>
+        <a href="{{ url_for('admin_products') }}" class="text-brand-accent hover:underline text-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+    <form method="POST" enctype="multipart/form-data" class="space-y-4 md:space-y-6" id="productForm">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+            <!-- Product Name -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Product Name *</label>
+                <input type="text" name="name" id="name" required
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="Enter product name">
+            </div>
+            
+            <!-- Slug -->
+            <div>
+                <label for="slug" class="block text-sm font-medium text-gray-700">Slug</label>
+                <input type="text" name="slug" id="slug"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="auto-generated">
+                <p class="text-xs text-gray-400 mt-1">Leave blank to auto-generate</p>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea name="description" id="description" rows="3 md:rows-4"
+                      class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                      placeholder="Product description"></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Price -->
+            <div>
+                <label for="price" class="block text-sm font-medium text-gray-700">Price *</label>
+                <input type="number" name="price" id="price" step="0.01" required
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="0.00">
+            </div>
+            
+            <!-- Original Price -->
+            <div>
+                <label for="original_price" class="block text-sm font-medium text-gray-700">Original Price</label>
+                <input type="number" name="original_price" id="original_price" step="0.01"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="0.00">
+            </div>
+            
+            <!-- Stock -->
+            <div>
+                <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                <input type="number" name="stock" id="stock" min="0"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="0">
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Category -->
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id" id="category_id"
+                        class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+                    <option value="">Select Category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Material -->
+            <div>
+                <label for="material" class="block text-sm font-medium text-gray-700">Material</label>
+                <input type="text" name="material" id="material"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="e.g., Cotton, Silk">
+            </div>
+        </div>
+        
+        <!-- Care Instructions -->
+        <div>
+            <label for="care_instructions" class="block text-sm font-medium text-gray-700">Care Instructions</label>
+            <textarea name="care_instructions" id="care_instructions" rows="2"
+                      class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                      placeholder="Care instructions"></textarea>
+        </div>
+        
+        <!-- ==================== SIZES - FIXED ==================== -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Available Sizes</label>
+            <div class="flex flex-wrap gap-2" id="sizeContainer">
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XS">XS</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="S">S</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="M">M</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="L">L</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XL">XL</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXL">XXL</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXXL">XXXL</button>
+            </div>
+            <!-- Hidden input to store selected sizes -->
+            <input type="hidden" name="sizes" id="sizesInput" value="">
+            <p class="text-xs text-gray-400 mt-2">Click on sizes to select/deselect. Selected sizes will be shown in green.</p>
+            <div id="selectedSizesDisplay" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+        
+        <!-- Main Image -->
+        <div>
+            <label for="image" class="block text-sm font-medium text-gray-700">Main Image *</label>
+            <div class="mt-1 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                <div id="mainImagePreview" class="w-24 h-24 sm:w-32 sm:h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 flex-shrink-0">
+                    <i class="fas fa-image text-2xl sm:text-3xl"></i>
+                </div>
+                <div class="flex-1 w-full">
+                    <input type="file" name="image" id="image" accept="image/*" required
+                           class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 md:file:mr-4 md:file:py-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-[#4d502c] file:text-white hover:file:bg-[#3d4022] transition">
+                    <p class="text-xs text-gray-400 mt-1">800x1000px, JPG/PNG</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multiple Images - MOBILE FRIENDLY -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Additional Images (Max 5)</label>
+            
+            <!-- Mobile-Friendly Image Upload -->
+            <div class="mt-2">
+                <!-- Upload Button -->
+                <div class="flex flex-wrap gap-2">
+                    <!-- Image slots - show 5 slots -->
+                    <div id="imageSlots" class="flex flex-wrap gap-2 w-full">
+                        {% for i in range(5) %}
+                        <div class="image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative" 
+                             data-slot="{{ i }}">
+                            <i class="fas fa-plus text-xl text-gray-300"></i>
+                            <span class="absolute bottom-1 text-[8px] text-gray-400">{{ i+1 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Hidden file input -->
+                    <input type="file" name="images[]" id="images" accept="image/*" multiple
+                           class="hidden">
+                    
+                    <!-- Add Image Button (triggers file input) -->
+                    <button type="button" id="addImageBtn" 
+                            class="w-full mt-2 bg-[#4d502c] text-white py-3 rounded-lg hover:bg-[#3d4022] transition text-sm font-medium touch-manipulation">
+                        <i class="fas fa-camera mr-2"></i> Add Images (Max 5)
+                    </button>
+                </div>
+                
+                <!-- Selected Count -->
+                <div id="selectedCount" class="text-xs text-gray-500 mt-2">
+                    <span id="countDisplay">0</span> of 5 images selected
+                </div>
+                
+                <div id="imageLimitMessage" class="text-xs text-red-500 mt-1 hidden">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Maximum 5 images allowed
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_featured" class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">Featured</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_best_seller" class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">Best Seller</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_new_arrival" class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">New Arrival</span>
+            </label>
+        </div>
+        
+        <!-- Submit -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+            <button type="submit" class="bg-[#4d502c] text-white px-4 py-2.5 md:px-6 md:py-3 rounded-lg hover:bg-[#3d4022] transition font-medium text-sm md:text-base w-full sm:w-auto">
+                <i class="fas fa-plus mr-2"></i> Add Product
+            </button>
+            <a href="{{ url_for('admin_products') }}" class="bg-gray-200 text-gray-700 px-4 py-2.5 md:px-6 md:py-3 rounded-lg hover:bg-gray-300 transition font-medium text-sm md:text-base text-center w-full sm:w-auto">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// ==================== AUTO-GENERATE SLUG ====================
+document.getElementById('name').addEventListener('input', function() {
+    var slugField = document.getElementById('slug');
+    if (!slugField.value || slugField.dataset.auto === 'true') {
+        var slug = this.value.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        slugField.value = slug;
+        slugField.dataset.auto = 'true';
+    }
+});
+
+// ==================== MAIN IMAGE PREVIEW ====================
+document.getElementById('image').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('mainImagePreview');
+            preview.innerHTML = '<img src="' + e.target.result + '" class="w-full h-full object-cover rounded-lg">';
+            preview.className = 'w-24 h-24 sm:w-32 sm:h-32 border border-gray-300 rounded-lg overflow-hidden';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// ==================== SIZE SELECTION - FIXED ====================
+var selectedSizes = [];
+
+document.querySelectorAll('.size-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var size = this.dataset.size;
+        var index = selectedSizes.indexOf(size);
+        
+        if (index > -1) {
+            // Remove size
+            selectedSizes.splice(index, 1);
+            this.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+            this.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+        } else {
+            // Add size - limit to prevent issues
+            if (selectedSizes.length >= 10) {
+                alert('Maximum 10 sizes allowed');
+                return;
+            }
+            selectedSizes.push(size);
+            this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+            this.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+        }
+        
+        // Update hidden input with comma-separated values (will be handled by backend)
+        document.getElementById('sizesInput').value = selectedSizes.join(',');
+        updateSelectedSizesDisplay();
+    });
+});
+
+function updateSelectedSizesDisplay() {
+    var display = document.getElementById('selectedSizesDisplay');
+    display.innerHTML = '';
+    
+    if (selectedSizes.length === 0) {
+        display.innerHTML = '<span class="text-xs text-gray-400">No sizes selected</span>';
+        return;
+    }
+    
+    selectedSizes.forEach(function(size) {
+        var span = document.createElement('span');
+        span.className = 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium';
+        span.textContent = size;
+        display.appendChild(span);
+    });
+}
+
+// ==================== MOBILE-FRIENDLY MULTIPLE IMAGE UPLOAD ====================
+var selectedFiles = [];
+var maxImages = 5;
+
+// Get elements
+var imageSlots = document.getElementById('imageSlots');
+var addImageBtn = document.getElementById('addImageBtn');
+var fileInput = document.getElementById('images');
+var countDisplay = document.getElementById('countDisplay');
+var limitMessage = document.getElementById('imageLimitMessage');
+
+// Add Image Button Click - opens file picker
+addImageBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    fileInput.click();
+});
+
+// When files are selected
+fileInput.addEventListener('change', function(e) {
+    var files = e.target.files;
+    var totalFiles = selectedFiles.length + files.length;
+    
+    // Check limit
+    if (totalFiles > maxImages) {
+        limitMessage.classList.remove('hidden');
+        alert('You can only select up to 5 images. You already have ' + selectedFiles.length + ' images selected.');
+        this.value = '';
+        return;
+    } else {
+        limitMessage.classList.add('hidden');
+    }
+    
+    // Add new files to selected files
+    for (var i = 0; i < files.length; i++) {
+        selectedFiles.push(files[i]);
+    }
+    
+    // Update display
+    updateImageSlots();
+    updateCount();
+    
+    // Reset file input so same file can be selected again
+    this.value = '';
+});
+
+// Update image slots with previews
+function updateImageSlots() {
+    var slots = imageSlots.querySelectorAll('.image-slot');
+    
+    // Clear all slots first
+    slots.forEach(function(slot, index) {
+        slot.innerHTML = '';
+        slot.className = 'image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative';
+        
+        if (index < selectedFiles.length) {
+            // Show image preview
+            var file = selectedFiles[index];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                slot.innerHTML = '<img src="' + e.target.result + '" class="w-full h-full object-cover rounded-lg">' +
+                    '<button type="button" class="remove-image absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600" data-index="' + index + '">' +
+                    '<i class="fas fa-times"></i></button>';
+                slot.className = 'image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-[#4d502c] rounded-lg overflow-hidden relative';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Empty slot
+            slot.innerHTML = '<i class="fas fa-plus text-xl text-gray-300"></i>' +
+                '<span class="absolute bottom-1 text-[8px] text-gray-400">' + (index + 1) + '</span>';
+            slot.className = 'image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative';
+        }
+    });
+    
+    // Add remove event listeners
+    document.querySelectorAll('.remove-image').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var index = parseInt(this.dataset.index);
+            removeImage(index);
+        });
+    });
+}
+
+// Remove image from selection
+function removeImage(index) {
+    selectedFiles.splice(index, 1);
+    updateImageSlots();
+    updateCount();
+    
+    // Reset the file input
+    fileInput.value = '';
+}
+
+// Update count display
+function updateCount() {
+    countDisplay.textContent = selectedFiles.length;
+    
+    // Update button text
+    if (selectedFiles.length >= maxImages) {
+        addImageBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Maximum 5 images selected';
+        addImageBtn.className = 'w-full mt-2 bg-green-600 text-white py-3 rounded-lg text-sm font-medium opacity-70 cursor-not-allowed touch-manipulation';
+        addImageBtn.disabled = true;
+    } else {
+        addImageBtn.innerHTML = '<i class="fas fa-camera mr-2"></i> Add Images (Max 5)';
+        addImageBtn.className = 'w-full mt-2 bg-[#4d502c] text-white py-3 rounded-lg hover:bg-[#3d4022] transition text-sm font-medium touch-manipulation';
+        addImageBtn.disabled = false;
+    }
+}
+
+// ==================== FORM VALIDATION ====================
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    var mainImage = document.getElementById('image');
+    
+    // Check main image
+    if (!mainImage.files || !mainImage.files[0]) {
+        e.preventDefault();
+        alert('Please select a main image');
+        return false;
+    }
+    
+    // Check additional images limit
+    if (selectedFiles.length > maxImages) {
+        e.preventDefault();
+        alert('Maximum 5 additional images allowed');
+        return false;
+    }
+    
+    // Check if at least one size is selected
+    if (selectedSizes.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one size for this product');
+        return false;
+    }
+    
+    // The sizes will be sent as a comma-separated string
+    // The backend will handle converting it to JSON
+    document.getElementById('sizesInput').value = selectedSizes.join(',');
+    
+    // Create a new FileList with all selected files
+    var dataTransfer = new DataTransfer();
+    for (var i = 0; i < selectedFiles.length; i++) {
+        dataTransfer.items.add(selectedFiles[i]);
+    }
+    fileInput.files = dataTransfer.files;
+});
+
+// ==================== TOUCH SUPPORT ====================
+document.querySelectorAll('.touch-manipulation').forEach(function(el) {
+    el.addEventListener('touchstart', function() {
+        // Just a touch feedback
+    }, { passive: true });
+});
+
+console.log('📸 Mobile-friendly multiple image upload ready');
+console.log('📏 Size selection ready');
+console.log('   Max images: 5');
+console.log('   Selected: ' + selectedFiles.length);
+console.log('   Sizes: ' + selectedSizes.join(', '));
+</script>
+
+<style>
+/* Mobile touch improvements */
+.touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.image-slot {
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+}
+
+.image-slot:hover {
+    border-color: #4d502c;
+}
+
+.remove-image {
+    touch-action: manipulation;
+    z-index: 10;
+}
+
+/* Prevent zoom on input focus */
+input, select, textarea {
+    font-size: 16px !important;
+}
+
+/* Size button styles */
+.size-btn {
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.size-btn:hover {
+    transform: scale(1.05);
+}
+
+.size-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+    .image-slot {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    .size-btn {
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+    }
+}
+</style>
+{% endblock %}

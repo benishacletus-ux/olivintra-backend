@@ -1,0 +1,602 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Search Results Header -->
+    {% if search %}
+    <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark">
+            Search Results for "{{ search }}"
+        </h1>
+        <p class="text-gray-500 text-sm mt-1">
+            Found {{ products|length }} product{% if products|length != 1 %}s{% endif %}
+            {% if search_suggestions and search_suggestions|length > 0 %}
+            · Related: 
+            {% for suggestion in search_suggestions %}
+            <a href="/shop?search={{ suggestion }}" class="text-brand-accent hover:underline inline-block">
+                {{ suggestion }}
+            </a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Filter Icon and Sort Bar -->
+    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div class="flex items-center gap-3 flex-wrap">
+            <button id="filterToggle" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-gray-50 transition group">
+                <svg class="w-5 h-5 text-gray-600 group-hover:text-[#4d502c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                <span class="text-sm font-medium text-gray-600 group-hover:text-[#4d502c]">Filter</span>
+                {% if min_price or max_price or selected_category %}
+                <span class="w-2 h-2 bg-[#4d502c] rounded-full"></span>
+                {% endif %}
+            </button>
+            
+            <div class="flex flex-wrap gap-2">
+                {% if selected_category %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                    {{ categories|selectattr('slug', 'equalto', selected_category)|map(attribute='name')|first }}
+                    <a href="#" class="remove-filter hover:text-red-500" data-param="category">&times;</a>
+                </span>
+                {% endif %}
+                {% if min_price %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                    ₹{{ min_price|round|int }} - {% if max_price %}₹{{ max_price|round|int }}{% else %}∞{% endif %}
+                    <a href="#" class="remove-filter hover:text-red-500" data-param="min_price">&times;</a>
+                </span>
+                {% endif %}
+                {% if max_price and not min_price %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                    Up to ₹{{ max_price|round|int }}
+                    <a href="#" class="remove-filter hover:text-red-500" data-param="max_price">&times;</a>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-500 hidden sm:inline">Sort by:</label>
+            <select id="sortSelect" 
+                    class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-[#4d502c] focus:border-[#4d502c] bg-white">
+                <option value="newest" {% if sort == 'newest' or not sort %}selected{% endif %}>Newest</option>
+                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Popular</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {% for product in products %}
+        <div class="group cursor-pointer">
+            <!-- ============ FIX: Correct product link ============ -->
+            <a href="/product/{{ product.slug }}">
+                <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
+                    <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
+                         style="background-image: url('{% if product.image %}{{ url_for('static', filename='uploads/' + product.image) }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
+                    </div>
+                    
+                    {% set all_images = product.get_all_images() %}
+                    {% if all_images|length > 1 %}
+                    <div class="absolute bottom-2 left-2 bg-black/60 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <i class="fas fa-images"></i>
+                        <span>{{ all_images|length }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product.original_price %}
+                    <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">Sale</span>
+                    {% endif %}
+                    
+                    {% set product_sizes = product.get_sizes() %}
+                    {% if product_sizes %}
+                    <div class="absolute top-2 right-2 flex flex-wrap gap-0.5 justify-end max-w-[60%]">
+                        {% for size in product_sizes[:4] %}
+                        <span class="bg-white/90 text-gray-700 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-sm">{{ size }}</span>
+                        {% endfor %}
+                        {% if product_sizes|length > 4 %}
+                        <span class="bg-white/90 text-gray-700 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-sm">+{{ product_sizes|length - 4 }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if not product.in_stock or product.stock == 0 %}
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div class="text-center">
+                            <span class="bg-red-600 text-white text-xs sm:text-sm font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transform -rotate-12 shadow-lg inline-block">
+                                <i class="fas fa-times-circle mr-1"></i> Out of Stock
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="text-[11px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate">{{ product.name }}</h4>
+                <p class="text-[11px] sm:text-xs text-gray-500 font-medium">
+                    ₹{{ "%.2f"|format(product.price) }}
+                    {% if product.original_price %}
+                    <span class="line-through text-gray-400 ml-1">₹{{ "%.2f"|format(product.original_price) }}</span>
+                    {% endif %}
+                </p>
+                
+                {% if product_sizes %}
+                <div class="flex flex-wrap gap-0.5 mt-0.5">
+                    {% for size in product_sizes[:4] %}
+                    <span class="text-[8px] border border-gray-300 px-1 py-0 rounded text-gray-600">{{ size }}</span>
+                    {% endfor %}
+                    {% if product_sizes|length > 4 %}
+                    <span class="text-[8px] border border-gray-300 px-1 py-0 rounded text-gray-600">+{{ product_sizes|length - 4 }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="mt-1">
+                    {% if product.in_stock and product.stock > 0 %}
+                    <span class="text-[9px] text-green-600 font-medium">
+                        <i class="fas fa-check-circle"></i> In Stock
+                    </span>
+                    {% else %}
+                    <span class="text-[9px] text-red-600 font-medium">
+                        <i class="fas fa-times-circle"></i> Out of Stock
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center text-[9px] sm:text-[10px] text-amber-500">
+                    ★★★★☆ <span class="text-gray-400 ml-1">({{ product.review_count }})</span>
+                </div>
+            </a>
+            
+            {% if not product.in_stock or product.stock == 0 %}
+            <button onclick="notifyMe('{{ product.name }}')" class="mt-1 text-[10px] text-brand-accent hover:underline flex items-center gap-1">
+                <i class="fas fa-bell"></i> Notify me when available
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not products %}
+    <div class="text-center py-12">
+        {% if search %}
+        <i class="fas fa-search text-6xl text-gray-300 mb-4 block"></i>
+        <p class="text-gray-500 text-lg">No products found for "{{ search }}"</p>
+        <p class="text-gray-400 text-sm mt-2">Try searching with different keywords</p>
+        {% if search_suggestions and search_suggestions|length > 0 %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-500 mb-2">You might like:</p>
+            <div class="flex flex-wrap gap-2 justify-center">
+                {% for suggestion in search_suggestions %}
+                <a href="/shop?search={{ suggestion }}" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-brand-accent hover:text-white transition">
+                    {{ suggestion }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <a href="/shop" class="inline-block mt-4 text-brand-accent hover:underline">View all products</a>
+        {% else %}
+        <p class="text-gray-500">No products found in this category.</p>
+        <a href="/shop" class="text-brand-accent hover:underline">View all products</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- Filter Overlay -->
+<div id="filterOverlay" class="fixed inset-0 bg-black/40 z-50 hidden opacity-0 transition-opacity duration-300">
+    <div id="filterPanel" class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+            <div class="flex items-center gap-3">
+                <button id="closeFilter" class="p-2 hover:bg-gray-100 rounded-full transition">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                <h3 class="text-lg font-serif text-brand-dark">Filters</h3>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="clearAllFilters" class="text-xs text-gray-500 hover:text-brand-accent transition">
+                    Clear All
+                </button>
+                <button id="applyFilters" class="px-4 py-2 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition text-sm font-medium">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <div>
+                <h4 class="text-sm font-semibold text-brand-dark mb-3">Category</h4>
+                <div class="space-y-2">
+                    <a href="#" class="filter-category block text-sm {% if not selected_category %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition" data-slug="">
+                        All Categories
+                    </a>
+                    {% for category in categories %}
+                    <a href="#" class="filter-category block text-sm {% if selected_category == category.slug %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition" data-slug="{{ category.slug }}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-brand-dark mb-3">Price Range</h4>
+                <div class="relative pt-4 pb-6">
+                    <div class="relative h-1 bg-gray-200 rounded-full">
+                        <div class="absolute h-1 bg-[#4d502c] rounded-full" id="filterPriceFill" style="left: 0%; right: 0%;"></div>
+                    </div>
+                    <input type="range" 
+                           id="filterMinSlider" 
+                           min="{{ price_min }}" 
+                           max="{{ price_max }}" 
+                           value="{{ min_price if min_price is not none else price_min }}"
+                           step="100"
+                           class="absolute top-0 w-full h-1 bg-transparent appearance-none pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#4d502c] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md">
+                    <input type="range" 
+                           id="filterMaxSlider" 
+                           min="{{ price_min }}" 
+                           max="{{ price_max }}" 
+                           value="{{ max_price if max_price is not none else price_max }}"
+                           step="100"
+                           class="absolute top-0 w-full h-1 bg-transparent appearance-none pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#4d502c] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md">
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mb-3">
+                    <span>₹{{ price_min|round|int }}</span>
+                    <span>₹{{ price_max|round|int }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-500">Min</label>
+                        <input type="number" 
+                               id="filterMinInput" 
+                               value="{{ min_price if min_price is not none else price_min }}"
+                               min="{{ price_min }}"
+                               max="{{ price_max }}"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c]">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs text-gray-500">Max</label>
+                        <input type="number" 
+                               id="filterMaxInput" 
+                               value="{{ max_price if max_price is not none else price_max }}"
+                               min="{{ price_min }}"
+                               max="{{ price_max }}"
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c]">
+                    </div>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="0" data-max="500">Under ₹500</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="500" data-max="1000">₹500 - ₹1,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="1000" data-max="2000">₹1,000 - ₹2,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="2000" data-max="5000">₹2,000 - ₹5,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="5000" data-max="10000">₹5,000 - ₹10,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="10000" data-max="">Above ₹10,000</button>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-sm font-semibold text-brand-dark mb-3">Availability</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="inStockOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c]">
+                        <span>In Stock Only</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer">
+                        <input type="checkbox" id="onSaleOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c]">
+                        <span>On Sale</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-200 sticky bottom-0 bg-white pb-4">
+                <button id="applyFiltersBottom" class="w-full py-3 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition font-medium">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+ <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Follow Us Section -->
+        <div class="text-center mb-6">
+            <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
+            <div class="flex justify-center gap-6">
+                <a href="https://www.facebook.com/share/18hECcHyk6/" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Facebook">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/olivintraa?igsh=dTV5YmIwZzhqcW03" target="_blank" 
+                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
+                   aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <!-- You can add more social icons here -->
+            </div>
+        </div>
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div class="md:col-span-4 space-y-3">
+            <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
+            <p class="text-gray-400 max-w-xs leading-relaxed">Timeless fashion for every moment. Beautifully designed ethnic wear tailored with precision and premium craftsmanship.</p>
+        </div>
+        <div class="md:col-span-2 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Shop</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/shop" class="hover:text-white transition">All Products</a></li>
+                <li><a href="/new-arrivals" class="hover:text-white transition">New Arrivals</a></li>
+                <li><a href="/best-sellers" class="hover:text-white transition">Best Sellers</a></li>
+                <li><a href="/my-orders" class="hover:text-white transition">My Orders</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Contact</h4>
+            <ul class="space-y-1.5 text-gray-400">
+                <li><span class="font-medium text-gray-300 text-[11px]">942P+WJX Parassala,<br>Kerala, India</span></li>
+                <li><a href="tel:+919037392700" class="hover:text-white transition">+91 90373 92700</a></li>
+                <li><a href="mailto:olivintra@gmail.com" class="hover:text-white transition text-[11px]">olivintra@gmail.com</a></li>
+            </ul>
+        </div>
+        <div class="md:col-span-3 space-y-2">
+            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Quick Links</h4>
+            <ul class="space-y-1.5">
+                <li><a href="/about" class="hover:text-white transition">About Us</a></li>
+                <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
+                <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
+                <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
+                <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800 mt-8 sm:mt-12 pt-6 text-center text-gray-600 text-[10px] sm:text-xs">
+        &copy; 2026 Olivintra. All Rights Reserved.
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            var sortValue = this.value;
+            var currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort', sortValue);
+            window.location.href = currentUrl.toString();
+        });
+    }
+    
+    document.querySelectorAll('.remove-filter').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var param = this.dataset.param;
+            var currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete(param);
+            window.location.href = currentUrl.toString();
+        });
+    });
+});
+
+var filterOverlay = document.getElementById('filterOverlay');
+var filterPanel = document.getElementById('filterPanel');
+var filterToggle = document.getElementById('filterToggle');
+var closeFilter = document.getElementById('closeFilter');
+var isFilterOpen = false;
+
+function openFilter() {
+    isFilterOpen = true;
+    filterOverlay.classList.remove('hidden');
+    filterOverlay.classList.remove('opacity-0');
+    filterPanel.classList.remove('translate-x-full');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeFilterFunc() {
+    isFilterOpen = false;
+    filterPanel.classList.add('translate-x-full');
+    setTimeout(function() {
+        filterOverlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+filterToggle.addEventListener('click', openFilter);
+closeFilter.addEventListener('click', closeFilterFunc);
+filterOverlay.addEventListener('click', function(e) {
+    if (e.target === filterOverlay) {
+        closeFilterFunc();
+    }
+});
+
+var filterMinSlider = document.getElementById('filterMinSlider');
+var filterMaxSlider = document.getElementById('filterMaxSlider');
+var filterMinInput = document.getElementById('filterMinInput');
+var filterMaxInput = document.getElementById('filterMaxInput');
+var filterFill = document.getElementById('filterPriceFill');
+var minVal = parseInt(filterMinSlider.min);
+var maxVal = parseInt(filterMaxSlider.max);
+
+function updateFilterPriceFill() {
+    var min = parseInt(filterMinSlider.value);
+    var max = parseInt(filterMaxSlider.value);
+    
+    if (min > max) {
+        filterMinSlider.value = max;
+        filterMaxSlider.value = min;
+    }
+    
+    var percentMin = ((min - minVal) / (maxVal - minVal)) * 100;
+    var percentMax = ((max - minVal) / (maxVal - minVal)) * 100;
+    
+    filterFill.style.left = percentMin + '%';
+    filterFill.style.right = (100 - percentMax) + '%';
+    
+    filterMinInput.value = min;
+    filterMaxInput.value = max;
+}
+
+filterMinSlider.addEventListener('input', function() {
+    if (parseInt(this.value) > parseInt(filterMaxSlider.value)) {
+        filterMaxSlider.value = this.value;
+    }
+    updateFilterPriceFill();
+});
+
+filterMaxSlider.addEventListener('input', function() {
+    if (parseInt(this.value) < parseInt(filterMinSlider.value)) {
+        filterMinSlider.value = this.value;
+    }
+    updateFilterPriceFill();
+});
+
+filterMinInput.addEventListener('change', function() {
+    var val = parseInt(this.value);
+    if (isNaN(val)) val = minVal;
+    if (val < minVal) val = minVal;
+    if (val > parseInt(filterMaxSlider.value)) val = parseInt(filterMaxSlider.value);
+    filterMinSlider.value = val;
+    updateFilterPriceFill();
+});
+
+filterMaxInput.addEventListener('change', function() {
+    var val = parseInt(this.value);
+    if (isNaN(val)) val = maxVal;
+    if (val > maxVal) val = maxVal;
+    if (val < parseInt(filterMinSlider.value)) val = parseInt(filterMinSlider.value);
+    filterMaxSlider.value = val;
+    updateFilterPriceFill();
+});
+
+document.querySelectorAll('.price-quick-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var min = this.dataset.min;
+        var max = this.dataset.max;
+        filterMinSlider.value = min;
+        filterMaxSlider.value = max || maxVal;
+        updateFilterPriceFill();
+    });
+});
+
+document.querySelectorAll('.filter-category').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.filter-category').forEach(function(l) {
+            l.classList.remove('text-brand-dark', 'font-semibold');
+            l.classList.add('text-gray-500');
+        });
+        this.classList.remove('text-gray-500');
+        this.classList.add('text-brand-dark', 'font-semibold');
+        window._selectedCategory = this.dataset.slug;
+    });
+});
+
+function applyFilters() {
+    var currentUrl = new URL(window.location.href);
+    var minPrice = filterMinInput.value;
+    var maxPrice = filterMaxInput.value;
+    var category = window._selectedCategory || '';
+    
+    if (minPrice) {
+        currentUrl.searchParams.set('min_price', minPrice);
+    } else {
+        currentUrl.searchParams.delete('min_price');
+    }
+    
+    if (maxPrice) {
+        currentUrl.searchParams.set('max_price', maxPrice);
+    } else {
+        currentUrl.searchParams.delete('max_price');
+    }
+    
+    if (category) {
+        currentUrl.searchParams.set('category', category);
+    } else {
+        currentUrl.searchParams.delete('category');
+    }
+    
+    var inStockOnly = document.getElementById('inStockOnly').checked;
+    if (inStockOnly) {
+        currentUrl.searchParams.set('in_stock', 'true');
+    } else {
+        currentUrl.searchParams.delete('in_stock');
+    }
+    
+    window.location.href = currentUrl.toString();
+}
+
+document.getElementById('applyFilters').addEventListener('click', applyFilters);
+document.getElementById('applyFiltersBottom').addEventListener('click', applyFilters);
+
+document.getElementById('clearAllFilters').addEventListener('click', function() {
+    window.location.href = '/shop';
+});
+
+function notifyMe(productName) {
+    var message = 'I want to be notified when "' + productName + '" is back in stock.';
+    var whatsappUrl = 'https://wa.me/919037392700?text=' + encodeURIComponent(message);
+    window.open(whatsappUrl, '_blank');
+    showNotification('✅ We\'ll notify you when "' + productName + '" is back in stock!');
+}
+
+function showNotification(message) {
+    var notification = document.getElementById('shopNotification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'shopNotification';
+        notification.style.cssText = 'position: fixed; bottom: 180px; right: 30px; background: #1a1a1a; color: white; padding: 14px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transform: translateY(20px); opacity: 0; transition: all 0.3s ease; max-width: 350px;';
+        document.body.appendChild(notification);
+    }
+    notification.textContent = message;
+    notification.style.transform = 'translateY(0)';
+    notification.style.opacity = '1';
+    clearTimeout(notification._timeout);
+    notification._timeout = setTimeout(function() {
+        notification.style.transform = 'translateY(20px)';
+        notification.style.opacity = '0';
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateFilterPriceFill();
+});
+
+console.log('🛍️ Shop page loaded successfully');
+</script>
+
+<style>
+#filterPanel {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#filterOverlay {
+    transition: opacity 0.3s ease;
+}
+.price-quick-btn {
+    min-height: 36px;
+    touch-action: manipulation;
+}
+#filterToggle {
+    touch-action: manipulation;
+    min-height: 44px;
+}
+@media (max-width: 640px) {
+    #filterPanel {
+        max-width: 100%;
+    }
+    .price-quick-btn {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+}
+</style>
+{% endblock %}

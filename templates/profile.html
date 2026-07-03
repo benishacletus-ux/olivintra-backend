@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark">My Profile</h1>
+            <p class="text-gray-500 text-sm">Welcome back, {{ user.username }}!</p>
+        </div>
+        <a href="/profile/edit" class="bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition text-sm">
+            Edit Profile
+        </a>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg border border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-500">Full Name</p>
+                <p class="font-medium text-brand-dark">{{ user.username }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Email</p>
+                <p class="font-medium text-brand-dark">{{ user.email }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Phone</p>
+                <p class="font-medium text-brand-dark">{{ user.phone or 'Not provided' }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Member Since</p>
+                <p class="font-medium text-brand-dark">{{ user.created_at.strftime('%d %b %Y') }}</p>
+            </div>
+            <div class="md:col-span-2">
+                <p class="text-sm text-gray-500">Address</p>
+                <p class="font-medium text-brand-dark">{{ user.address or 'Not provided' }}</p>
+                {% if user.city and user.state %}
+                <p class="font-medium text-brand-dark">{{ user.city }}, {{ user.state }} {{ user.pincode or '' }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Order History -->
+    <div class="mt-8">
+        <h2 class="text-xl font-serif text-brand-dark mb-4">Order History</h2>
+        {% if user.orders %}
+        <div class="space-y-4">
+            {% for order in user.orders|sort(attribute='created_at', reverse=True) %}
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold text-brand-dark">#{{ order.order_number }}</p>
+                        <p class="text-sm text-gray-500">{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                        <p class="text-sm">Total: ₹{{ "%.2f"|format(order.total_amount) }}</p>
+                    </div>
+                    <span class="status-badge px-2 py-1 rounded text-xs {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif order.status == 'shipped' %}bg-purple-100 text-purple-800{% elif order.status == 'delivered' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ order.status }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white p-8 rounded-lg border border-gray-200 text-center">
+            <p class="text-gray-500">No orders yet</p>
+            <a href="/shop" class="inline-block mt-2 text-brand-accent hover:underline">Start Shopping</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

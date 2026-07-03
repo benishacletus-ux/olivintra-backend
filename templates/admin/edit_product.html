@@ -1,0 +1,429 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Edit Product - Olivintra Admin{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4 md:mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-serif text-brand-dark">Edit Product</h2>
+            <p class="text-gray-500 text-xs md:text-sm mt-1">Update product details</p>
+        </div>
+        <a href="{{ url_for('admin_products') }}" class="text-brand-accent hover:underline text-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+    <form method="POST" enctype="multipart/form-data" class="space-y-4 md:space-y-6" id="editProductForm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <!-- Product Name -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Product Name *</label>
+                <input type="text" name="name" id="name" required value="{{ product.name }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+            </div>
+            
+            <!-- Slug -->
+            <div>
+                <label for="slug" class="block text-sm font-medium text-gray-700">Slug</label>
+                <input type="text" name="slug" id="slug" value="{{ product.slug }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea name="description" id="description" rows="3 md:rows-4"
+                      class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">{{ product.description }}</textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Price -->
+            <div>
+                <label for="price" class="block text-sm font-medium text-gray-700">Price *</label>
+                <input type="number" name="price" id="price" step="0.01" required value="{{ product.price }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+            </div>
+            
+            <!-- Original Price -->
+            <div>
+                <label for="original_price" class="block text-sm font-medium text-gray-700">Original Price</label>
+                <input type="number" name="original_price" id="original_price" step="0.01" value="{{ product.original_price }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+            </div>
+            
+            <!-- Stock -->
+            <div>
+                <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                <input type="number" name="stock" id="stock" min="0" value="{{ product.stock }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Category -->
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id" id="category_id"
+                        class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">
+                    <option value="">Select Category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if product.category_id == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Material -->
+            <div>
+                <label for="material" class="block text-sm font-medium text-gray-700">Material</label>
+                <input type="text" name="material" id="material" value="{{ product.material }}"
+                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base"
+                       placeholder="e.g., Cotton, Silk">
+            </div>
+        </div>
+        
+        <!-- Care Instructions -->
+        <div>
+            <label for="care_instructions" class="block text-sm font-medium text-gray-700">Care Instructions</label>
+            <textarea name="care_instructions" id="care_instructions" rows="2"
+                      class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">{{ product.care_instructions }}</textarea>
+        </div>
+        
+        <!-- ==================== SIZES ==================== -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Available Sizes</label>
+            <div class="flex flex-wrap gap-2" id="sizeContainer">
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XS">XS</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="S">S</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="M">M</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="L">L</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XL">XL</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXL">XXL</button>
+                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXXL">XXXL</button>
+            </div>
+            <!-- Hidden input to store selected sizes -->
+            <input type="hidden" name="sizes" id="sizesInput" value="{{ product.sizes if product.sizes else '' }}">
+            <p class="text-xs text-gray-400 mt-2">Click on sizes to select/deselect. Selected sizes will be shown in green.</p>
+            <div id="selectedSizesDisplay" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+        
+        <!-- Main Image -->
+        <div>
+            <label for="image" class="block text-sm font-medium text-gray-700">Main Image</label>
+            <div class="mt-1 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                <div id="mainImagePreview" class="w-24 h-24 sm:w-32 sm:h-32 border border-gray-300 rounded-lg overflow-hidden flex-shrink-0">
+                    {% if product.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                        <i class="fas fa-image text-2xl sm:text-3xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 w-full">
+                    <input type="file" name="image" id="image" accept="image/*"
+                           class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 md:file:mr-4 md:file:py-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-[#4d502c] file:text-white hover:file:bg-[#3d4022] transition">
+                    <p class="text-xs text-gray-400 mt-1">Leave empty to keep current</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Images -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Additional Images (Max 5)</label>
+            
+            <!-- Existing Images -->
+            {% set images = product.get_images() %}
+            <div class="mt-2 flex flex-wrap gap-2 sm:gap-3">
+                {% if images %}
+                    {% for img in images %}
+                    <div class="relative group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 border border-gray-300 rounded-lg overflow-hidden">
+                            <img src="{{ url_for('static', filename='uploads/' + img) }}" 
+                                 alt="Product image" 
+                                 class="w-full h-full object-cover">
+                        </div>
+                        <button type="button" 
+                                onclick="removeImage({{ product.id }}, {{ loop.index0 }})" 
+                                class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:bg-red-600 transition text-[10px] sm:text-xs opacity-0 group-hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                    <div class="text-xs text-gray-400 mt-2 w-full">
+                        {{ images|length }} of 5 images used
+                    </div>
+                {% else %}
+                    <p class="text-sm text-gray-400 mt-2">No additional images</p>
+                {% endif %}
+            </div>
+            
+            <!-- Upload New Images -->
+            <div class="mt-3 sm:mt-4 p-3 sm:p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#4d502c] transition bg-gray-50">
+                <div class="flex items-center justify-center flex-col text-center">
+                    <i class="fas fa-cloud-upload-alt text-2xl sm:text-3xl text-gray-400 mb-1 sm:mb-2"></i>
+                    <p class="text-xs sm:text-sm text-gray-500">Add more images (up to 5 total)</p>
+                    <p class="text-[10px] sm:text-xs text-gray-400">Hold <kbd class="px-1 py-0.5 bg-gray-200 rounded text-xs">Ctrl</kbd> or <kbd class="px-1 py-0.5 bg-gray-200 rounded text-xs">Cmd</kbd> to select multiple</p>
+                    <input type="file" name="images[]" id="images" accept="image/*" multiple
+                           class="mt-2 block w-full text-xs sm:text-sm text-gray-500 file:mr-2 file:py-1 file:px-2 md:file:mr-4 md:file:py-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-[#4d502c] file:text-white hover:file:bg-[#3d4022] transition cursor-pointer">
+                </div>
+            </div>
+            
+            <!-- Preview -->
+            <div id="additionalImagesPreview" class="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-3"></div>
+            <div id="selectedCount" class="text-xs text-gray-500 mt-2">
+                <span id="countDisplay">0</span> new images selected
+            </div>
+            <div id="imageLimitMessage" class="text-xs text-red-500 mt-1 hidden">
+                <i class="fas fa-exclamation-circle mr-1"></i> Maximum 5 images total
+            </div>
+        </div>
+        
+        <!-- Features -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %} class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">Featured</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_best_seller" {% if product.is_best_seller %}checked{% endif %} class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">Best Seller</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="is_new_arrival" {% if product.is_new_arrival %}checked{% endif %} class="h-4 w-4 text-[#4d502c]">
+                <span class="text-gray-700">New Arrival</span>
+            </label>
+        </div>
+        
+        <!-- Submit -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+            <button type="submit" class="bg-[#4d502c] text-white px-4 py-2.5 md:px-6 md:py-3 rounded-lg hover:bg-[#3d4022] transition font-medium text-sm md:text-base w-full sm:w-auto">
+                <i class="fas fa-save mr-2"></i> Update
+            </button>
+            <a href="{{ url_for('admin_products') }}" class="bg-gray-200 text-gray-700 px-4 py-2.5 md:px-6 md:py-3 rounded-lg hover:bg-gray-300 transition font-medium text-sm md:text-base text-center w-full sm:w-auto">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// ==================== MAIN IMAGE PREVIEW ====================
+document.getElementById('image').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('mainImagePreview');
+            preview.innerHTML = '<img src="' + e.target.result + '" class="w-full h-full object-cover">';
+            preview.className = 'w-24 h-24 sm:w-32 sm:h-32 border border-gray-300 rounded-lg overflow-hidden';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// ==================== SIZE SELECTION ====================
+var selectedSizes = [];
+var existingSizes = document.getElementById('sizesInput').value;
+
+// Parse existing sizes - handles both JSON and comma-separated
+if (existingSizes && existingSizes.length > 0) {
+    try {
+        // Try to parse as JSON first
+        var parsed = JSON.parse(existingSizes);
+        if (Array.isArray(parsed)) {
+            selectedSizes = parsed;
+        }
+    } catch(e) {
+        // If not JSON, treat as comma-separated
+        selectedSizes = existingSizes.split(',').map(function(s) { 
+            return s.trim(); 
+        }).filter(function(s) { 
+            return s && s.length > 0; 
+        });
+    }
+}
+
+// Ensure selectedSizes is an array
+if (!Array.isArray(selectedSizes)) {
+    selectedSizes = [];
+}
+
+// Initialize size buttons
+document.querySelectorAll('.size-btn').forEach(function(btn) {
+    var size = btn.dataset.size;
+    if (selectedSizes.indexOf(size) > -1) {
+        btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+        btn.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+    }
+});
+
+// Update display
+updateSelectedSizesDisplay();
+
+// Add click handlers
+document.querySelectorAll('.size-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var size = this.dataset.size;
+        var index = selectedSizes.indexOf(size);
+        
+        if (index > -1) {
+            // Remove size
+            selectedSizes.splice(index, 1);
+            this.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+            this.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+        } else {
+            // Add size
+            selectedSizes.push(size);
+            this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+            this.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+        }
+        
+        // Update hidden input with comma-separated values
+        document.getElementById('sizesInput').value = selectedSizes.join(',');
+        updateSelectedSizesDisplay();
+    });
+});
+
+function updateSelectedSizesDisplay() {
+    var display = document.getElementById('selectedSizesDisplay');
+    display.innerHTML = '';
+    
+    if (selectedSizes.length === 0) {
+        display.innerHTML = '<span class="text-xs text-gray-400">No sizes selected</span>';
+        return;
+    }
+    
+    selectedSizes.forEach(function(size) {
+        var span = document.createElement('span');
+        span.className = 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium';
+        span.textContent = size;
+        display.appendChild(span);
+    });
+}
+
+// ==================== ADDITIONAL IMAGES PREVIEW ====================
+document.getElementById('images').addEventListener('change', function(e) {
+    var preview = document.getElementById('additionalImagesPreview');
+    var message = document.getElementById('imageLimitMessage');
+    var countDisplay = document.getElementById('countDisplay');
+    var files = e.target.files;
+    var currentImages = document.querySelectorAll('.relative.group').length;
+    
+    // Check if total would exceed 5
+    if (files.length + currentImages > 5) {
+        message.classList.remove('hidden');
+        alert('You already have ' + currentImages + ' images. Maximum 5 total. You selected ' + files.length + ' images.');
+        this.value = '';
+        preview.innerHTML = '';
+        countDisplay.textContent = '0';
+        return;
+    } else {
+        message.classList.add('hidden');
+    }
+    
+    // Show preview for all selected images
+    preview.innerHTML = '';
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var div = document.createElement('div');
+            div.className = 'w-16 h-16 sm:w-20 sm:h-20 border border-gray-300 rounded-lg overflow-hidden';
+            div.innerHTML = '<img src="' + e.target.result + '" class="w-full h-full object-cover">';
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    }
+    countDisplay.textContent = files.length;
+});
+
+// ==================== REMOVE IMAGE FUNCTION ====================
+function removeImage(productId, imageIndex) {
+    if (confirm('Remove this image?')) {
+        window.location.href = '/admin/product/remove-image/' + productId + '/' + imageIndex;
+    }
+}
+
+// ==================== FORM VALIDATION ====================
+document.getElementById('editProductForm').addEventListener('submit', function(e) {
+    var imagesInput = document.getElementById('images');
+    var currentImages = document.querySelectorAll('.relative.group').length;
+    
+    // Check image limit
+    if (imagesInput.files.length + currentImages > 5) {
+        e.preventDefault();
+        alert('Maximum 5 images total. You already have ' + currentImages + ' images. You selected ' + imagesInput.files.length + ' more.');
+        return false;
+    }
+    
+    // Check if at least one size is selected
+    if (selectedSizes.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one size for this product');
+        return false;
+    }
+    
+    // Update hidden input with final sizes (comma-separated)
+    document.getElementById('sizesInput').value = selectedSizes.join(',');
+});
+
+console.log('📸 Edit Product - Multiple image upload ready');
+console.log('📏 Current sizes:', selectedSizes);
+</script>
+
+<style>
+kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #333;
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    font-family: inherit;
+}
+
+/* Size button styles */
+.size-btn {
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.size-btn:hover {
+    transform: scale(1.05);
+}
+
+.size-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile touch improvements */
+@media (max-width: 640px) {
+    .file\\:mr-2 {
+        margin-right: 4px !important;
+    }
+    .file\\:py-1 {
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+    .file\\:px-2 {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    .size-btn {
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+    }
+}
+</style>
+{% endblock %}

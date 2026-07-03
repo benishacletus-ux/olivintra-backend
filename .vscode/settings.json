@@ -1,0 +1,13 @@
+{
+  "css.validate": false,
+  "html.validate.styles": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "files.associations": {
+    "*.html": "html",
+    "*.jinja": "jinja-html"
+  },
+  "emmet.includeLanguages": {
+    "jinja-html": "html"
+  }
+}
