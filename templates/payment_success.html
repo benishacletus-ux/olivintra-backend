@@ -15,7 +15,7 @@
         <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-sm text-gray-600">Order #: <strong class="text-brand-dark">{{ order.order_number }}</strong></p>
             
-            <!-- Calculate subtotal dynamically -->
+            <!-- Calculate subtotal and shipping -->
             {% set subtotal = order.total_amount %}
             {% set shipping = 0 %}
             {% if order.total_amount < 2999 %}
