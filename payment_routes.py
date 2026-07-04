@@ -183,7 +183,7 @@ def webhook():
         return jsonify({'error': str(e)}), 500
 
 
-# ✅ ADDED: Payment Checkout Route
+# ✅ Payment Checkout Route
 @payment_bp.route('/checkout/<int:order_id>')
 def payment_checkout(order_id):
     """Payment checkout page - Guest checkout enabled"""
