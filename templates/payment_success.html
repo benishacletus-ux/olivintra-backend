@@ -11,22 +11,21 @@
         <h2 class="text-2xl font-serif font-bold text-brand-dark">Payment Successful! 🎉</h2>
         <p class="text-gray-500 mt-2">Thank you for your order! Your payment has been confirmed.</p>
         
+        {% if order %}
         <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-sm text-gray-600">Order #: <strong class="text-brand-dark">{{ order.order_number }}</strong></p>
             
-            <!-- ✅ Calculate subtotal dynamically -->
-            {% set subtotal = order.total_amount - 60 %}
-            {% if order.total_amount >= 2999 %}
-                {% set subtotal = order.total_amount %}
-                {% set shipping = 0 %}
-            {% else %}
+            <!-- Calculate subtotal dynamically -->
+            {% set subtotal = order.total_amount %}
+            {% set shipping = 0 %}
+            {% if order.total_amount < 2999 %}
                 {% set subtotal = order.total_amount - 60 %}
                 {% set shipping = 60 %}
             {% endif %}
             
             <p class="text-sm text-gray-600 mt-1">Subtotal: <strong>₹{{ "%.2f"|format(subtotal) }}</strong></p>
             <p class="text-sm text-gray-600 mt-1">Shipping: 
-                <strong class="text-gray-600">
+                <strong>
                     {% if shipping == 0 %}
                     <span class="text-green-600">Free</span>
                     {% else %}
@@ -37,6 +36,11 @@
             <p class="text-sm text-gray-600 mt-1">Amount Paid: <strong class="text-green-600">₹{{ "%.2f"|format(order.total_amount) }}</strong></p>
             <p class="text-sm text-gray-600 mt-1">Payment Status: <span class="text-green-600 font-semibold">✓ Paid</span></p>
         </div>
+        {% else %}
+        <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p class="text-sm text-yellow-600">Order details are being processed. You will receive a confirmation email shortly.</p>
+        </div>
+        {% endif %}
         
         <div class="flex gap-3 mt-6">
             <a href="/my-orders" class="flex-1 bg-[#4d502c] text-white px-4 py-2.5 rounded-lg hover:bg-[#3d4022] transition font-medium">
