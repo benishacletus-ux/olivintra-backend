@@ -372,9 +372,9 @@ def checkout():
         
         db.session.commit()
         
-        # Redirect to payment page instead of confirmation
+        # ✅ FIXED: Redirect to payment checkout page using the blueprint route
         flash('Please complete your payment to confirm the order.', 'info')
-        return redirect(url_for('payment_checkout', order_id=order.id))
+        return redirect(url_for('payment.payment_checkout', order_id=order.id))
     
     # ========== GET REQUEST - Calculate cart items and total ==========
     cart_items = []
