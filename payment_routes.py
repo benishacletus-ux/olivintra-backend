@@ -183,6 +183,38 @@ def webhook():
         return jsonify({'error': str(e)}), 500
 
 
+# ✅ ADDED: Payment Checkout Route
+@payment_bp.route('/checkout/<int:order_id>')
+def payment_checkout(order_id):
+    """Payment checkout page - Guest checkout enabled"""
+    from models import Product  # Import here to avoid circular imports
+    
+    order = Order.query.get_or_404(order_id)
+    
+    # Calculate cart items
+    cart_items = []
+    subtotal = 0
+    for item in order.items:
+        product = Product.query.get(item.product_id)
+        if product:
+            cart_items.append({
+                'product': product,
+                'quantity': item.quantity,
+                'size': item.size
+            })
+            subtotal += product.price * item.quantity
+    
+    shipping = 60 if subtotal < 2999 else 0
+    total = subtotal + shipping
+    
+    return render_template('payment_checkout.html', 
+                         order=order, 
+                         cart_items=cart_items, 
+                         subtotal=subtotal,
+                         shipping=shipping,
+                         total=total)
+
+
 @payment_bp.route('/success/<int:order_id>')
 def payment_success(order_id):
     """Payment success page"""
