@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-
-
 {% block content %}
 <div class="min-h-[70vh] bg-gray-50 flex items-center justify-center py-12 px-4">
     <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
@@ -15,13 +13,30 @@
         
         <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-sm text-gray-600">Order #: <strong class="text-brand-dark">{{ order.order_number }}</strong></p>
-            <p class="text-sm text-gray-600 mt-1">Subtotal: <strong>₹{{ "%.2f"|format(order.total_amount - 60) }}</strong></p>
-            <p class="text-sm text-gray-600 mt-1">Shipping: <strong class="text-gray-600">₹60.00</strong></p>
+            
+            <!-- ✅ Calculate subtotal dynamically -->
+            {% set subtotal = order.total_amount - 60 %}
+            {% if order.total_amount >= 2999 %}
+                {% set subtotal = order.total_amount %}
+                {% set shipping = 0 %}
+            {% else %}
+                {% set subtotal = order.total_amount - 60 %}
+                {% set shipping = 60 %}
+            {% endif %}
+            
+            <p class="text-sm text-gray-600 mt-1">Subtotal: <strong>₹{{ "%.2f"|format(subtotal) }}</strong></p>
+            <p class="text-sm text-gray-600 mt-1">Shipping: 
+                <strong class="text-gray-600">
+                    {% if shipping == 0 %}
+                    <span class="text-green-600">Free</span>
+                    {% else %}
+                    ₹{{ "%.2f"|format(shipping) }}
+                    {% endif %}
+                </strong>
+            </p>
             <p class="text-sm text-gray-600 mt-1">Amount Paid: <strong class="text-green-600">₹{{ "%.2f"|format(order.total_amount) }}</strong></p>
             <p class="text-sm text-gray-600 mt-1">Payment Status: <span class="text-green-600 font-semibold">✓ Paid</span></p>
         </div>
-        
-        
         
         <div class="flex gap-3 mt-6">
             <a href="/my-orders" class="flex-1 bg-[#4d502c] text-white px-4 py-2.5 rounded-lg hover:bg-[#3d4022] transition font-medium">
