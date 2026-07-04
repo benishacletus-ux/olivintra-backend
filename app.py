@@ -1584,6 +1584,28 @@ def api_categories():
         'image': c.image
     } for c in categories])
 
+# ==================== HERO SLIDES API ====================
+
+@app.route('/api/hero-slides', methods=['GET'])
+def api_hero_slides():
+    """Get hero slides as JSON"""
+    try:
+        slides = HeroSlide.query.filter_by(is_active=True).order_by(HeroSlide.order).all()
+        return jsonify([{
+            'id': s.id,
+            'title': s.title,
+            'subtitle': s.subtitle,
+            'description': s.description,
+            'button_text': s.button_text,
+            'button_link': s.button_link,
+            'image': s.image,
+            'order': s.order,
+            'is_active': s.is_active,
+            'created_at': s.created_at.isoformat() if s.created_at else None
+        } for s in slides])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/create-order', methods=['POST'])
 def api_create_order():
     """Create order from frontend"""
@@ -1847,6 +1869,7 @@ if __name__ == '__main__':
     print("   /api/products")
     print("   /api/product/<slug>")
     print("   /api/categories")
+    print("   /api/hero-slides")
     print("   /api/create-order")
     print("   /api/verify-payment")
     print("   /api/order/<id>")
