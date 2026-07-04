@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
-from flask_cors import CORS  # <-- ADDED
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import json
@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # ========== ADD CORS ==========
-CORS(app)  # <-- ADDED - Allows Netlify to call your API
+CORS(app)
 
 db.init_app(app)
 
@@ -34,7 +34,6 @@ app.register_blueprint(payment_bp)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'admin_login'
-# COMPLETELY DISABLE all login messages
 login_manager.login_message = None
 login_manager.login_message_category = None
 login_manager.needs_refresh_message = None
@@ -42,7 +41,6 @@ login_manager.needs_refresh_message_category = None
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Try Admin first (for admin routes)
     admin = Admin.query.get(int(user_id))
     if admin:
         return admin
@@ -64,13 +62,8 @@ def utility_processor():
             return sum(item['quantity'] for item in session['cart'])
         return 0
     
-    # WhatsApp Integration
     whatsapp_number = '+919037392700'
     whatsapp_url = f'https://wa.me/{whatsapp_number}'
-    
-    # Add datetime to templates
-    def now():
-        return datetime.now()
     
     return dict(
         cart_count=cart_count,
@@ -82,13 +75,11 @@ def utility_processor():
 # ==================== HELPER FUNCTIONS ====================
 
 def admin_required(f):
-    """Decorator to check if user is admin"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             flash('Please login as admin to continue.', 'error')
             return redirect(url_for('admin_login'))
-        # Check if user is Admin (not User)
         if not isinstance(current_user, Admin):
             flash('Access denied. Admin only.', 'error')
             return redirect(url_for('admin_login'))
@@ -96,13 +87,11 @@ def admin_required(f):
     return decorated_function
 
 def is_admin():
-    """Check if current user is admin"""
     if not current_user.is_authenticated:
         return False
     return isinstance(current_user, Admin)
 
 def update_product_rating(product_id):
-    """Helper function to update product rating"""
     from models import Product, Review
     
     avg_rating = db.session.query(db.func.avg(Review.rating)).filter_by(
@@ -138,17 +127,13 @@ def index():
                          latest_reviews=latest_reviews,
                          hero_slides=hero_slides)
 
-# ==================== NEW ARRIVALS & BEST SELLERS SEPARATE PAGES ====================
-
 @app.route('/new-arrivals')
 def new_arrivals():
-    """Show only new arrival products"""
     products = Product.query.filter_by(is_new_arrival=True).all()
     return render_template('new_arrivals.html', products=products)
 
 @app.route('/best-sellers')
 def best_sellers():
-    """Show only best seller products"""
     products = Product.query.filter_by(is_best_seller=True).all()
     return render_template('best_sellers.html', products=products)
 
@@ -268,7 +253,6 @@ def add_to_cart():
     
     cart = session['cart']
     
-    # Check if same product with same size already in cart
     for item in cart:
         if item['product_id'] == product_id and item.get('size') == size:
             item['quantity'] += quantity
@@ -335,7 +319,6 @@ def checkout():
             flash('Your cart is empty', 'error')
             return redirect(url_for('shop'))
         
-        # Calculate shipping
         shipping = 60 if subtotal < 2999 else 0
         total = subtotal + shipping
         
@@ -350,11 +333,11 @@ def checkout():
             city=request.form.get('city'),
             state=request.form.get('state'),
             pincode=request.form.get('pincode'),
-            total_amount=total,  # Now includes shipping
+            total_amount=total,
             payment_method='Razorpay',
             payment_status='pending',
             notes=request.form.get('notes'),
-            user_id=None  # Guest checkout
+            user_id=None
         )
         db.session.add(order)
         db.session.flush()
@@ -372,11 +355,9 @@ def checkout():
         
         db.session.commit()
         
-        # ✅ FIXED: Redirect to payment checkout page using the blueprint route
         flash('Please complete your payment to confirm the order.', 'info')
         return redirect(url_for('payment.payment_checkout', order_id=order.id))
     
-    # ========== GET REQUEST - Calculate cart items and total ==========
     cart_items = []
     subtotal = 0
     if 'cart' in session:
@@ -395,33 +376,7 @@ def checkout():
     
     return render_template('checkout.html', cart_items=cart_items, subtotal=subtotal, shipping=shipping, total=total)
 
-# ==================== PAYMENT CHECKOUT ROUTE ====================
-
-@app.route('/payment/checkout/<int:order_id>')
-def payment_checkout(order_id):
-    order = Order.query.get_or_404(order_id)
-    
-    cart_items = []
-    subtotal = 0
-    for item in order.items:
-        product = Product.query.get(item.product_id)
-        if product:
-            cart_items.append({
-                'product': product,
-                'quantity': item.quantity,
-                'size': item.size
-            })
-            subtotal += product.price * item.quantity
-    
-    shipping = 60 if subtotal < 2999 else 0
-    total = subtotal + shipping
-    
-    return render_template('payment_checkout.html', 
-                         order=order, 
-                         cart_items=cart_items, 
-                         subtotal=subtotal,
-                         shipping=shipping,
-                         total=total)
+# ==================== ORDER CONFIRMATION ====================
 
 @app.route('/order-confirmation/<int:order_id>')
 def order_confirmation(order_id):
@@ -436,7 +391,6 @@ def my_orders():
         email = request.form.get('email')
         
         if email:
-            # Find all orders with this email
             orders = Order.query.filter_by(
                 customer_email=email
             ).order_by(Order.created_at.desc()).all()
@@ -450,7 +404,6 @@ def my_orders():
             flash('Please enter your email address', 'error')
             return render_template('my_orders.html', orders=[], searched=False)
     
-    # GET request - show search form
     return render_template('my_orders.html', orders=[], searched=False)
 
 # ==================== SUBMIT REVIEW ROUTE ====================
@@ -563,7 +516,6 @@ def subscribe():
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    # If already logged in as admin, go to dashboard
     if current_user.is_authenticated and isinstance(current_user, Admin):
         return redirect(url_for('admin_dashboard'))
     
@@ -628,7 +580,6 @@ def admin_dashboard():
 @login_required
 @admin_required
 def admin_notifications_count():
-    """Get real-time notification counts for admin panel"""
     try:
         pending_orders = Order.query.filter_by(status='pending').count()
         pending_reviews = Review.query.filter_by(is_approved=False).count()
@@ -649,7 +600,6 @@ def admin_notifications_count():
 @login_required
 @admin_required
 def admin_stock_management():
-    """Admin: Stock management page"""
     products = Product.query.order_by(Product.created_at.desc()).all()
     return render_template('admin/stock_management.html', products=products)
 
@@ -657,7 +607,6 @@ def admin_stock_management():
 @login_required
 @admin_required
 def admin_update_stock():
-    """Admin: Update product stock status"""
     try:
         data = request.get_json()
         product_id = data.get('product_id')
@@ -686,7 +635,6 @@ def admin_update_stock():
 @login_required
 @admin_required
 def admin_bulk_update_stock():
-    """Admin: Bulk update stock status"""
     try:
         data = request.get_json()
         updates = data.get('updates', [])
@@ -714,7 +662,6 @@ def admin_bulk_update_stock():
 @login_required
 @admin_required
 def admin_products_stock_data():
-    """Admin: Get all products with stock status as JSON"""
     products = Product.query.order_by(Product.created_at.desc()).all()
     
     product_data = []
@@ -738,7 +685,6 @@ def admin_products_stock_data():
 @login_required
 @admin_required
 def admin_orders_count():
-    """Get real-time order counts for dashboard"""
     try:
         total = Order.query.count()
         pending = Order.query.filter_by(status='pending').count()
@@ -764,7 +710,6 @@ def admin_orders_count():
 @login_required
 @admin_required
 def admin_analytics_data():
-    """Get real-time analytics data for dashboard including today, yesterday, month, year revenue"""
     try:
         from sqlalchemy import func
         from datetime import datetime, timedelta
@@ -775,7 +720,6 @@ def admin_analytics_data():
         year_start = today.replace(month=1, day=1)
         week_ago = today - timedelta(days=6)
         
-        # Today's revenue and orders
         today_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
@@ -784,7 +728,6 @@ def admin_analytics_data():
             Order.status != 'cancelled'
         ).first()
         
-        # Yesterday's revenue and orders
         yesterday_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
@@ -793,7 +736,6 @@ def admin_analytics_data():
             Order.status != 'cancelled'
         ).first()
         
-        # Month's revenue and orders
         month_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
@@ -802,7 +744,6 @@ def admin_analytics_data():
             Order.status != 'cancelled'
         ).first()
         
-        # Year's revenue and orders
         year_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
@@ -811,7 +752,6 @@ def admin_analytics_data():
             Order.status != 'cancelled'
         ).first()
         
-        # Daily orders and revenue for charts (last 7 days)
         daily_orders = db.session.query(
             func.date(Order.created_at).label('date'),
             func.count(Order.id).label('count')
@@ -831,7 +771,6 @@ def admin_analytics_data():
             func.date(Order.created_at)
         ).all()
         
-        # Prepare chart data
         days = []
         orders = []
         revenue = []
@@ -855,7 +794,6 @@ def admin_analytics_data():
                     break
             revenue.append(revenue_amount)
         
-        # Total counts
         total_orders = Order.query.count()
         pending_orders = Order.query.filter_by(status='pending').count()
         confirmed_orders = Order.query.filter_by(status='confirmed').count()
@@ -885,14 +823,13 @@ def admin_analytics_data():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
 # ==================== ADMIN RECENT ORDERS & MESSAGES API ====================
 
 @app.route('/admin/recent-orders')
 @login_required
 @admin_required
 def admin_recent_orders():
-    """Get recent orders for dashboard"""
     try:
         orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
         order_data = [{
@@ -911,7 +848,6 @@ def admin_recent_orders():
 @login_required
 @admin_required
 def admin_recent_messages():
-    """Get recent messages for dashboard"""
     try:
         messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).limit(5).all()
         message_data = [{
@@ -947,7 +883,6 @@ def admin_add_product():
         name = request.form.get('name')
         slug = request.form.get('slug') or re.sub(r'[^a-z0-9-]', '-', name.lower().replace(' ', '-'))
         
-        # Check for duplicate slug
         existing_product = Product.query.filter_by(slug=slug).first()
         if existing_product:
             import random
@@ -967,31 +902,24 @@ def admin_add_product():
         material = request.form.get('material')
         care_instructions = request.form.get('care_instructions')
         
-        # ============ FIX: Handle sizes properly ============
         sizes_str = request.form.get('sizes', '').strip()
         if sizes_str:
-            # Clean up the string - remove extra quotes and brackets
             sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
-            # Remove leading/trailing quotes if present
             if sizes_str.startswith('"') and sizes_str.endswith('"'):
                 sizes_str = sizes_str[1:-1]
-            # Try to parse as JSON if it's a JSON string
             try:
                 sizes_list = json.loads(sizes_str)
                 if isinstance(sizes_list, list):
                     sizes_json = json.dumps(sizes_list)
                 else:
-                    # If it's a comma-separated string
                     sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
                     sizes_json = json.dumps(sizes_list)
             except:
-                # If JSON parsing fails, treat as comma-separated
                 sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
                 sizes_json = json.dumps(sizes_list)
         else:
             sizes_json = None
         
-        # Handle main image
         image = None
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
@@ -1057,7 +985,6 @@ def admin_edit_product(id):
         product.name = request.form.get('name')
         product.slug = request.form.get('slug') or re.sub(r'[^a-z0-9-]', '-', product.name.lower().replace(' ', '-'))
         
-        # Check if slug is taken by another product
         existing = Product.query.filter_by(slug=product.slug).first()
         if existing and existing.id != product.id:
             import random
@@ -1077,31 +1004,24 @@ def admin_edit_product(id):
         product.material = request.form.get('material')
         product.care_instructions = request.form.get('care_instructions')
         
-        # ============ FIX: Handle sizes properly ============
         sizes_str = request.form.get('sizes', '').strip()
         if sizes_str:
-            # Clean up the string - remove extra quotes and brackets
             sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
-            # Remove leading/trailing quotes if present
             if sizes_str.startswith('"') and sizes_str.endswith('"'):
                 sizes_str = sizes_str[1:-1]
-            # Try to parse as JSON if it's a JSON string
             try:
                 sizes_list = json.loads(sizes_str)
                 if isinstance(sizes_list, list):
                     product.sizes = json.dumps(sizes_list)
                 else:
-                    # If it's a comma-separated string
                     sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
                     product.sizes = json.dumps(sizes_list)
             except:
-                # If JSON parsing fails, treat as comma-separated
                 sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
                 product.sizes = json.dumps(sizes_list)
         else:
             product.sizes = None
         
-        # Handle main image
         if 'image' in request.files and request.files['image'].filename:
             if product.image:
                 old_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)
@@ -1115,7 +1035,6 @@ def admin_edit_product(id):
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             product.image = filename
         
-        # Handle additional images
         if 'images[]' in request.files:
             files = request.files.getlist('images[]')
             current_images = product.get_images()
@@ -1151,24 +1070,20 @@ def admin_delete_product(id):
     product = Product.query.get_or_404(id)
     
     try:
-        # Delete main image
         if product.image:
             old_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)
             if os.path.exists(old_path):
                 os.remove(old_path)
         
-        # Delete additional images
         images = product.get_images()
         for img in images:
             old_path = os.path.join(app.config['UPLOAD_FOLDER'], img)
             if os.path.exists(old_path):
                 os.remove(old_path)
         
-        # Delete product
         db.session.delete(product)
         db.session.commit()
         
-        # Check if AJAX request
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': True, 'message': 'Product deleted successfully'})
         
@@ -1317,7 +1232,7 @@ def admin_message_delete(id):
     flash('Message deleted', 'success')
     return redirect(url_for('admin_messages'))
 
-# ==================== ADMIN REVIEW ROUTES - COMPLETE ====================
+# ==================== ADMIN REVIEW ROUTES ====================
 
 @app.route('/admin/reviews')
 @login_required
@@ -1379,6 +1294,8 @@ def admin_review_delete(id):
     update_product_rating(product_id)
     flash('Review deleted successfully', 'success')
     return redirect(url_for('admin_reviews'))
+
+# ==================== ADMIN HERO SLIDES ====================
 
 @app.route('/admin/hero')
 @login_required
@@ -1474,13 +1391,10 @@ def admin_hero_delete(id):
     flash('Hero slide deleted successfully', 'success')
     return redirect(url_for('admin_hero'))
 
-# ==================== ADMIN HERO TOGGLE ROUTE ====================
-
 @app.route('/admin/hero/toggle/<int:id>')
 @login_required
 @admin_required
 def admin_hero_toggle(id):
-    """Toggle hero slide active status"""
     slide = HeroSlide.query.get_or_404(id)
     slide.is_active = not slide.is_active
     db.session.commit()
@@ -1506,17 +1420,14 @@ with app.app_context():
 # Add escapejs filter for Jinja2
 @app.template_filter('escapejs')
 def escapejs_filter(value):
-    """Escape JavaScript string"""
     if value is None:
         return ''
-    # Escape single quotes and backslashes
     return value.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
 
 # ==================== API ROUTES FOR FRONTEND ====================
 
 @app.route('/api/health', methods=['GET'])
 def api_health():
-    """Health check endpoint"""
     return jsonify({
         'status': 'ok',
         'message': 'API is running',
@@ -1525,7 +1436,6 @@ def api_health():
 
 @app.route('/api/products', methods=['GET'])
 def api_products():
-    """Get all products as JSON"""
     products = Product.query.all()
     return jsonify([{
         'id': p.id,
@@ -1543,7 +1453,6 @@ def api_products():
 
 @app.route('/api/product/<slug>', methods=['GET'])
 def api_product_detail(slug):
-    """Get single product as JSON"""
     product = Product.query.filter_by(slug=slug).first()
     if not product:
         return jsonify({'error': 'Product not found'}), 404
@@ -1574,7 +1483,6 @@ def api_product_detail(slug):
 
 @app.route('/api/categories', methods=['GET'])
 def api_categories():
-    """Get all categories as JSON"""
     categories = Category.query.all()
     return jsonify([{
         'id': c.id,
@@ -1584,11 +1492,8 @@ def api_categories():
         'image': c.image
     } for c in categories])
 
-# ==================== HERO SLIDES API ====================
-
 @app.route('/api/hero-slides', methods=['GET'])
 def api_hero_slides():
-    """Get hero slides as JSON"""
     try:
         slides = HeroSlide.query.filter_by(is_active=True).order_by(HeroSlide.order).all()
         return jsonify([{
@@ -1608,17 +1513,14 @@ def api_hero_slides():
 
 @app.route('/api/create-order', methods=['POST'])
 def api_create_order():
-    """Create order from frontend"""
     try:
         data = request.get_json()
         
-        # Validate required fields
         required_fields = ['name', 'email', 'phone', 'address', 'city', 'state', 'pincode', 'cart_items']
         for field in required_fields:
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        # Calculate subtotal
         subtotal = 0
         cart_items_data = []
         for item in data['cart_items']:
@@ -1635,10 +1537,8 @@ def api_create_order():
         shipping = 60 if subtotal < 2999 else 0
         total = subtotal + shipping
         
-        # Generate order number
         order_number = f"OL-{datetime.now().strftime('%Y%m%d')}-{secrets.token_hex(4).upper()}"
         
-        # Create order
         order = Order(
             order_number=order_number,
             customer_name=data['name'],
@@ -1657,7 +1557,6 @@ def api_create_order():
         db.session.add(order)
         db.session.flush()
         
-        # Add order items
         for item in cart_items_data:
             order_item = OrderItem(
                 order_id=order.id,
@@ -1686,17 +1585,12 @@ def api_create_order():
 
 @app.route('/api/verify-payment', methods=['POST'])
 def api_verify_payment():
-    """Verify payment from frontend"""
     try:
         data = request.get_json()
         order_id = data.get('order_id')
         payment_id = data.get('payment_id')
         signature = data.get('signature')
         
-        # Your Razorpay verification logic here
-        # This is a placeholder - you'll integrate with your payment_routes.py
-        
-        # Update order status
         order = Order.query.get(order_id)
         if order:
             order.payment_status = 'paid'
@@ -1715,7 +1609,6 @@ def api_verify_payment():
 
 @app.route('/api/order/<int:order_id>', methods=['GET'])
 def api_get_order(order_id):
-    """Get order details as JSON"""
     order = Order.query.get_or_404(order_id)
     return jsonify({
         'id': order.id,
@@ -1742,7 +1635,6 @@ def api_get_order(order_id):
 
 @app.route('/api/my-orders', methods=['POST'])
 def api_my_orders():
-    """Get orders by email"""
     try:
         data = request.get_json()
         email = data.get('email')
@@ -1775,7 +1667,6 @@ def api_my_orders():
 
 @app.route('/api/submit-review', methods=['POST'])
 def api_submit_review():
-    """Submit review from frontend"""
     try:
         data = request.get_json()
         
@@ -1784,7 +1675,6 @@ def api_submit_review():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        # Check if already reviewed
         existing_review = Review.query.filter_by(
             product_id=data['product_id'],
             order_id=data['order_id']
@@ -1820,7 +1710,6 @@ def api_submit_review():
 
 @app.route('/api/contact', methods=['POST'])
 def api_contact():
-    """Submit contact form from frontend"""
     try:
         data = request.get_json()
         
