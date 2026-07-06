@@ -10,6 +10,11 @@ import secrets
 import re
 from functools import wraps
 
+# ============ CLOUDINARY IMPORTS ============
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 from config import Config
 from models import db, Admin, Category, Product, Order, OrderItem, ContactMessage, Review, HeroSlide, User, UserActivity
 
@@ -18,6 +23,14 @@ from payment_routes import payment_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# ========== CONFIGURE CLOUDINARY ==========
+cloudinary.config(
+    cloud_name=Config.CLOUDINARY_CLOUD_NAME,
+    api_key=Config.CLOUDINARY_API_KEY,
+    api_secret=Config.CLOUDINARY_API_SECRET,
+    secure=True
+)
 
 # ========== ADD CORS ==========
 CORS(app)
@@ -871,7 +884,7 @@ def admin_products():
     products = Product.query.all()
     return render_template('admin/products.html', products=products)
 
-# ==================== FIXED: ADMIN ADD PRODUCT WITH SIZE HANDLING ====================
+# ==================== FIXED: ADMIN ADD PRODUCT WITH SIZE HANDLING AND CLOUDINARY ====================
 
 @app.route('/admin/product/add', methods=['GET', 'POST'])
 @login_required
@@ -920,15 +933,22 @@ def admin_add_product():
         else:
             sizes_json = None
         
+        # ============ UPLOAD MAIN IMAGE TO CLOUDINARY ============
         image = None
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"product_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_products",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
+                return render_template('admin/add_product.html', categories=categories)
         
+        # ============ UPLOAD ADDITIONAL IMAGES TO CLOUDINARY ============
         images_list = []
         if 'images[]' in request.files:
             files = request.files.getlist('images[]')
@@ -939,11 +959,15 @@ def admin_add_product():
             
             for file in files:
                 if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    filename = f"product_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    images_list.append(filename)
+                    try:
+                        upload_result = cloudinary.uploader.upload(
+                            file,
+                            folder="olivintra_products/gallery",
+                            allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                        )
+                        images_list.append(upload_result['secure_url'])
+                    except Exception as e:
+                        flash(f'Failed to upload {file.filename}: {str(e)}', 'error')
         
         product = Product(
             name=name,
@@ -972,7 +996,7 @@ def admin_add_product():
     
     return render_template('admin/add_product.html', categories=categories)
 
-# ==================== FIXED: ADMIN EDIT PRODUCT WITH SIZE HANDLING ====================
+# ==================== FIXED: ADMIN EDIT PRODUCT WITH SIZE HANDLING AND CLOUDINARY ====================
 
 @app.route('/admin/product/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1022,19 +1046,20 @@ def admin_edit_product(id):
         else:
             product.sizes = None
         
+        # ============ UPDATE MAIN IMAGE WITH CLOUDINARY ============
         if 'image' in request.files and request.files['image'].filename:
-            if product.image:
-                old_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"product_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            product.image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_products",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                product.image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
         
+        # ============ UPDATE ADDITIONAL IMAGES WITH CLOUDINARY ============
         if 'images[]' in request.files:
             files = request.files.getlist('images[]')
             current_images = product.get_images()
@@ -1046,11 +1071,15 @@ def admin_edit_product(id):
             new_images = []
             for file in files:
                 if file and file.filename:
-                    filename = secure_filename(file.filename)
-                    filename = f"product_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-                    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    new_images.append(filename)
+                    try:
+                        upload_result = cloudinary.uploader.upload(
+                            file,
+                            folder="olivintra_products/gallery",
+                            allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                        )
+                        new_images.append(upload_result['secure_url'])
+                    except Exception as e:
+                        flash(f'Failed to upload {file.filename}: {str(e)}', 'error')
             
             current_images.extend(new_images)
             product.set_images(current_images)
@@ -1061,7 +1090,7 @@ def admin_edit_product(id):
     
     return render_template('admin/edit_product.html', product=product, categories=categories)
 
-# ==================== FIXED: ADMIN DELETE PRODUCT WITH AJAX SUPPORT ====================
+# ==================== FIXED: ADMIN DELETE PRODUCT WITH CLOUDINARY SUPPORT ====================
 
 @app.route('/admin/product/delete/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1070,17 +1099,26 @@ def admin_delete_product(id):
     product = Product.query.get_or_404(id)
     
     try:
+        # ============ DELETE IMAGES FROM CLOUDINARY ============
+        # Delete main image
         if product.image:
-            old_path = os.path.join(app.config['UPLOAD_FOLDER'], product.image)
-            if os.path.exists(old_path):
-                os.remove(old_path)
+            try:
+                # Extract public_id from Cloudinary URL
+                public_id = product.image.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(f"olivintra_products/{public_id}")
+            except:
+                pass
         
+        # Delete additional images
         images = product.get_images()
         for img in images:
-            old_path = os.path.join(app.config['UPLOAD_FOLDER'], img)
-            if os.path.exists(old_path):
-                os.remove(old_path)
+            try:
+                public_id = img.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(f"olivintra_products/gallery/{public_id}")
+            except:
+                pass
         
+        # Delete product from database
         db.session.delete(product)
         db.session.commit()
         
