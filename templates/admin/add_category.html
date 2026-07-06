@@ -1,6 +1,5 @@
 {% extends "admin/base_admin.html" %}
 
-
 {% block admin_content %}
 <div class="mb-8">
     <div class="flex justify-between items-center">
@@ -51,7 +50,7 @@
                 <div class="flex-1">
                     <input type="file" name="image" id="image" accept="image/*"
                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#4d502c] file:text-white hover:file:bg-[#3d4022] transition">
-                    <p class="text-xs text-gray-400 mt-1">Recommended: 800x600px, JPG/PNG</p>
+                    <p class="text-xs text-gray-400 mt-1">Recommended: 800x600px, JPG/PNG (Stored permanently in Cloudinary)</p>
                 </div>
             </div>
         </div>
@@ -96,5 +95,7 @@ document.getElementById('image').addEventListener('change', function(e) {
         reader.readAsDataURL(file);
     }
 });
+
+console.log('📸 Add Category - Cloudinary image upload ready');
 </script>
 {% endblock %}
