@@ -1354,7 +1354,7 @@ def admin_review_delete(id):
     flash('Review deleted successfully', 'success')
     return redirect(url_for('admin_reviews'))
 
-# ==================== ADMIN HERO SLIDES ====================
+# ==================== ADMIN HERO SLIDES - FIXED WITH CLOUDINARY ====================
 
 @app.route('/admin/hero')
 @login_required
@@ -1376,14 +1376,20 @@ def admin_hero_add():
         order = int(request.form.get('order', 0))
         is_active = request.form.get('is_active') == 'on'
         
+        # ============ UPLOAD HERO SLIDE IMAGE TO CLOUDINARY ============
         image = None
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"hero_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_hero",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
+                return render_template('admin/hero_add.html')
         
         slide = HeroSlide(
             title=title,
@@ -1417,18 +1423,18 @@ def admin_hero_edit(id):
         slide.order = int(request.form.get('order', 0))
         slide.is_active = request.form.get('is_active') == 'on'
         
+        # ============ UPDATE HERO SLIDE IMAGE WITH CLOUDINARY ============
         if 'image' in request.files and request.files['image'].filename:
-            if slide.image:
-                old_path = os.path.join(app.config['UPLOAD_FOLDER'], slide.image)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"hero_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            slide.image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_hero",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                slide.image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
         
         db.session.commit()
         flash('Hero slide updated successfully', 'success')
@@ -1441,10 +1447,15 @@ def admin_hero_edit(id):
 @admin_required
 def admin_hero_delete(id):
     slide = HeroSlide.query.get_or_404(id)
+    
+    # ============ DELETE HERO SLIDE IMAGE FROM CLOUDINARY ============
     if slide.image:
-        old_path = os.path.join(app.config['UPLOAD_FOLDER'], slide.image)
-        if os.path.exists(old_path):
-            os.remove(old_path)
+        try:
+            public_id = slide.image.split('/')[-1].split('.')[0]
+            cloudinary.uploader.destroy(f"olivintra_hero/{public_id}")
+        except:
+            pass
+    
     db.session.delete(slide)
     db.session.commit()
     flash('Hero slide deleted successfully', 'success')
@@ -1540,7 +1551,7 @@ def api_product_detail(slug):
         'created_at': product.created_at.isoformat() if product.created_at else None
     })
 
-@app.route('/api/categories', methods=['GET'])
+@app.route('/api/categories', methods(['GET'])
 def api_categories():
     categories = Category.query.all()
     return jsonify([{
