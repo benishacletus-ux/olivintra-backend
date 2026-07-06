@@ -1551,7 +1551,7 @@ def api_product_detail(slug):
         'created_at': product.created_at.isoformat() if product.created_at else None
     })
 
-@app.route('/api/categories', methods(['GET'])
+@app.route('/api/categories', methods=['GET'])
 def api_categories():
     categories = Category.query.all()
     return jsonify([{
