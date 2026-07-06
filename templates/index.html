@@ -55,7 +55,7 @@
                     <div class="min-w-full h-full relative flex-shrink-0">
                         <div class="absolute inset-0 bg-black/40 z-10"></div>
                         <div class="w-full h-full bg-cover bg-center bg-no-repeat"
-                             style="background-image: url('{% if slide.image %}{{ url_for('static', filename='uploads/' + slide.image) }}{% else %}https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&q=80{% endif %}');">
+                             style="background-image: url('{% if slide.image %}{{ slide.image }}{% else %}https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200&q=80{% endif %}');">
                         </div>
                         <div class="absolute inset-0 z-20 flex items-center">
                             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -130,7 +130,7 @@
             {% for category in categories %}
             <a href="/shop?category={{ category.slug }}" class="flex flex-col items-center group flex-shrink-0 transition-all duration-300 hover:scale-105">
                 <div class="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gray-200 overflow-hidden border-2 border-gray-300 group-hover:border-brand-accent transition bg-cover bg-center shadow-md hover:shadow-xl"
-                     style="background-image: url('{% if category.image %}{{ url_for('static', filename='uploads/' + category.image) }}{% else %}https://via.placeholder.com/150{% endif %}');">
+                     style="background-image: url('{% if category.image %}{{ category.image }}{% else %}https://via.placeholder.com/150{% endif %}');">
                 </div>
                 <span class="text-[10px] sm:text-xs font-semibold tracking-wider text-gray-700 uppercase mt-2 text-center">{{ category.name }}</span>
             </a>
@@ -157,7 +157,7 @@
             <a href="/product/{{ product.slug }}">
                 <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
                     <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                         style="background-image: url('{% if product.image %}{{ url_for('static', filename='uploads/' + product.image) }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
+                         style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
                     </div>
                     {% if product.original_price %}
                     <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">Sale</span>
@@ -214,7 +214,7 @@
             <a href="/product/{{ product.slug }}">
                 <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
                     <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                         style="background-image: url('{% if product.image %}{{ url_for('static', filename='uploads/' + product.image) }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
+                         style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
                     </div>
                     {% set all_images = product.get_all_images() %}
                     {% if all_images|length > 1 %}
@@ -400,8 +400,6 @@
                     </div>
                 </div>
             {% endif %}
-            
-            <!-- NO DUPLICATE REVIEWS - Removed the clone section that was causing duplicates -->
         </div>
         
         <!-- Gradient fade effect on edges -->
@@ -539,8 +537,6 @@
                 <p class="text-xs text-brand-accent mt-2 font-medium">— Olivintra</p>
             </div>
         </div>
-
-        
 
         <div class="relative mt-6 sm:mt-8 text-center max-w-3xl mx-auto">
             <div class="bg-brand-dark/5 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-brand-dark/10">
@@ -680,9 +676,8 @@
 </section>
 
 <!-- Footer -->
- <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Follow Us Section -->
         <div class="text-center mb-6">
             <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
             <div class="flex justify-center gap-6">
@@ -696,9 +691,11 @@
                    aria-label="Instagram">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <!-- You can add more social icons here -->
             </div>
         </div>
+    </div>
+</footer>
+
 <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-4 space-y-3">
@@ -730,7 +727,6 @@
                 <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
                 <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
                 <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
-                
             </ul>
         </div>
     </div>
