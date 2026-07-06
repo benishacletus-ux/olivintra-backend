@@ -1,7 +1,5 @@
 {% extends "admin/base_admin.html" %}
 
-
-
 {% block admin_content %}
 <div class="mb-4 md:mb-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -100,7 +98,7 @@
                       placeholder="Care instructions"></textarea>
         </div>
         
-        <!-- ==================== SIZES - FIXED ==================== -->
+        <!-- ==================== SIZES ==================== -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Available Sizes</label>
             <div class="flex flex-wrap gap-2" id="sizeContainer">
@@ -128,40 +126,37 @@
                 <div class="flex-1 w-full">
                     <input type="file" name="image" id="image" accept="image/*" required
                            class="block w-full text-sm text-gray-500 file:mr-2 file:py-1.5 file:px-3 md:file:mr-4 md:file:py-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-[#4d502c] file:text-white hover:file:bg-[#3d4022] transition">
-                    <p class="text-xs text-gray-400 mt-1">800x1000px, JPG/PNG</p>
+                    <p class="text-xs text-gray-400 mt-1">Recommended: 800x1000px, JPG/PNG (Will be stored permanently in Cloudinary)</p>
                 </div>
             </div>
         </div>
         
-        <!-- Multiple Images - MOBILE FRIENDLY -->
+        <!-- Additional Images -->
         <div>
             <label class="block text-sm font-medium text-gray-700">Additional Images (Max 5)</label>
             
             <!-- Mobile-Friendly Image Upload -->
             <div class="mt-2">
-                <!-- Upload Button -->
-                <div class="flex flex-wrap gap-2">
-                    <!-- Image slots - show 5 slots -->
-                    <div id="imageSlots" class="flex flex-wrap gap-2 w-full">
-                        {% for i in range(5) %}
-                        <div class="image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative" 
-                             data-slot="{{ i }}">
-                            <i class="fas fa-plus text-xl text-gray-300"></i>
-                            <span class="absolute bottom-1 text-[8px] text-gray-400">{{ i+1 }}</span>
-                        </div>
-                        {% endfor %}
+                <!-- Image slots -->
+                <div id="imageSlots" class="flex flex-wrap gap-2 w-full">
+                    {% for i in range(5) %}
+                    <div class="image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative" 
+                         data-slot="{{ i }}">
+                        <i class="fas fa-plus text-xl text-gray-300"></i>
+                        <span class="absolute bottom-1 text-[8px] text-gray-400">{{ i+1 }}</span>
                     </div>
-                    
-                    <!-- Hidden file input -->
-                    <input type="file" name="images[]" id="images" accept="image/*" multiple
-                           class="hidden">
-                    
-                    <!-- Add Image Button (triggers file input) -->
-                    <button type="button" id="addImageBtn" 
-                            class="w-full mt-2 bg-[#4d502c] text-white py-3 rounded-lg hover:bg-[#3d4022] transition text-sm font-medium touch-manipulation">
-                        <i class="fas fa-camera mr-2"></i> Add Images (Max 5)
-                    </button>
+                    {% endfor %}
                 </div>
+                
+                <!-- Hidden file input -->
+                <input type="file" name="images[]" id="images" accept="image/*" multiple
+                       class="hidden">
+                
+                <!-- Add Image Button -->
+                <button type="button" id="addImageBtn" 
+                        class="w-full mt-2 bg-[#4d502c] text-white py-3 rounded-lg hover:bg-[#3d4022] transition text-sm font-medium touch-manipulation">
+                    <i class="fas fa-camera mr-2"></i> Add Images (Max 5)
+                </button>
                 
                 <!-- Selected Count -->
                 <div id="selectedCount" class="text-xs text-gray-500 mt-2">
@@ -231,7 +226,7 @@ document.getElementById('image').addEventListener('change', function(e) {
     }
 });
 
-// ==================== SIZE SELECTION - FIXED ====================
+// ==================== SIZE SELECTION ====================
 var selectedSizes = [];
 
 document.querySelectorAll('.size-btn').forEach(function(btn) {
@@ -245,7 +240,7 @@ document.querySelectorAll('.size-btn').forEach(function(btn) {
             this.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
             this.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
         } else {
-            // Add size - limit to prevent issues
+            // Add size
             if (selectedSizes.length >= 10) {
                 alert('Maximum 10 sizes allowed');
                 return;
@@ -255,7 +250,7 @@ document.querySelectorAll('.size-btn').forEach(function(btn) {
             this.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
         }
         
-        // Update hidden input with comma-separated values (will be handled by backend)
+        // Update hidden input
         document.getElementById('sizesInput').value = selectedSizes.join(',');
         updateSelectedSizesDisplay();
     });
@@ -278,18 +273,17 @@ function updateSelectedSizesDisplay() {
     });
 }
 
-// ==================== MOBILE-FRIENDLY MULTIPLE IMAGE UPLOAD ====================
+// ==================== MULTIPLE IMAGE UPLOAD ====================
 var selectedFiles = [];
 var maxImages = 5;
 
-// Get elements
 var imageSlots = document.getElementById('imageSlots');
 var addImageBtn = document.getElementById('addImageBtn');
 var fileInput = document.getElementById('images');
 var countDisplay = document.getElementById('countDisplay');
 var limitMessage = document.getElementById('imageLimitMessage');
 
-// Add Image Button Click - opens file picker
+// Add Image Button Click
 addImageBtn.addEventListener('click', function(e) {
     e.preventDefault();
     fileInput.click();
@@ -300,7 +294,6 @@ fileInput.addEventListener('change', function(e) {
     var files = e.target.files;
     var totalFiles = selectedFiles.length + files.length;
     
-    // Check limit
     if (totalFiles > maxImages) {
         limitMessage.classList.remove('hidden');
         alert('You can only select up to 5 images. You already have ' + selectedFiles.length + ' images selected.');
@@ -310,30 +303,23 @@ fileInput.addEventListener('change', function(e) {
         limitMessage.classList.add('hidden');
     }
     
-    // Add new files to selected files
     for (var i = 0; i < files.length; i++) {
         selectedFiles.push(files[i]);
     }
     
-    // Update display
     updateImageSlots();
     updateCount();
-    
-    // Reset file input so same file can be selected again
     this.value = '';
 });
 
-// Update image slots with previews
 function updateImageSlots() {
     var slots = imageSlots.querySelectorAll('.image-slot');
     
-    // Clear all slots first
     slots.forEach(function(slot, index) {
         slot.innerHTML = '';
         slot.className = 'image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative';
         
         if (index < selectedFiles.length) {
-            // Show image preview
             var file = selectedFiles[index];
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -344,14 +330,12 @@ function updateImageSlots() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Empty slot
             slot.innerHTML = '<i class="fas fa-plus text-xl text-gray-300"></i>' +
                 '<span class="absolute bottom-1 text-[8px] text-gray-400">' + (index + 1) + '</span>';
             slot.className = 'image-slot w-[70px] h-[70px] sm:w-[80px] sm:h-[80px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 bg-gray-50 relative';
         }
     });
     
-    // Add remove event listeners
     document.querySelectorAll('.remove-image').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -361,21 +345,16 @@ function updateImageSlots() {
     });
 }
 
-// Remove image from selection
 function removeImage(index) {
     selectedFiles.splice(index, 1);
     updateImageSlots();
     updateCount();
-    
-    // Reset the file input
     fileInput.value = '';
 }
 
-// Update count display
 function updateCount() {
     countDisplay.textContent = selectedFiles.length;
     
-    // Update button text
     if (selectedFiles.length >= maxImages) {
         addImageBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Maximum 5 images selected';
         addImageBtn.className = 'w-full mt-2 bg-green-600 text-white py-3 rounded-lg text-sm font-medium opacity-70 cursor-not-allowed touch-manipulation';
@@ -391,32 +370,26 @@ function updateCount() {
 document.getElementById('productForm').addEventListener('submit', function(e) {
     var mainImage = document.getElementById('image');
     
-    // Check main image
     if (!mainImage.files || !mainImage.files[0]) {
         e.preventDefault();
         alert('Please select a main image');
         return false;
     }
     
-    // Check additional images limit
     if (selectedFiles.length > maxImages) {
         e.preventDefault();
         alert('Maximum 5 additional images allowed');
         return false;
     }
     
-    // Check if at least one size is selected
     if (selectedSizes.length === 0) {
         e.preventDefault();
         alert('Please select at least one size for this product');
         return false;
     }
     
-    // The sizes will be sent as a comma-separated string
-    // The backend will handle converting it to JSON
     document.getElementById('sizesInput').value = selectedSizes.join(',');
     
-    // Create a new FileList with all selected files
     var dataTransfer = new DataTransfer();
     for (var i = 0; i < selectedFiles.length; i++) {
         dataTransfer.items.add(selectedFiles[i]);
@@ -424,22 +397,11 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
     fileInput.files = dataTransfer.files;
 });
 
-// ==================== TOUCH SUPPORT ====================
-document.querySelectorAll('.touch-manipulation').forEach(function(el) {
-    el.addEventListener('touchstart', function() {
-        // Just a touch feedback
-    }, { passive: true });
-});
-
-console.log('📸 Mobile-friendly multiple image upload ready');
+console.log('📸 Add Product - Cloudinary image upload ready');
 console.log('📏 Size selection ready');
-console.log('   Max images: 5');
-console.log('   Selected: ' + selectedFiles.length);
-console.log('   Sizes: ' + selectedSizes.join(', '));
 </script>
 
 <style>
-/* Mobile touch improvements */
 .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -459,12 +421,10 @@ console.log('   Sizes: ' + selectedSizes.join(', '));
     z-index: 10;
 }
 
-/* Prevent zoom on input focus */
 input, select, textarea {
     font-size: 16px !important;
 }
 
-/* Size button styles */
 .size-btn {
     transition: all 0.2s ease;
     touch-action: manipulation;
