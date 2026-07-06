@@ -55,9 +55,9 @@ class Config:
     PAYMENT_CAPTURE = os.environ.get('PAYMENT_CAPTURE') or 'automatic'
     
     # ==================== CLOUDINARY CONFIGURATION ====================
-    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME') or 'your_cloud_name'
-    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY') or 'your_api_key'
-    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or 'your_api_secret'
+    CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME') or 'ehwp5jee'
+    CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY') or '984251329922223'
+    CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET') or 'T5z2nHBBkOF37KiBTdBJBccJKSA'
     
     # ==================== FREE SHIPPING THRESHOLD ====================
     FREE_SHIPPING_THRESHOLD = 2999  # Free shipping on orders above ₹2999
