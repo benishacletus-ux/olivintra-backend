@@ -1090,6 +1090,43 @@ def admin_edit_product(id):
     
     return render_template('admin/edit_product.html', product=product, categories=categories)
 
+# ==================== ADMIN REMOVE PRODUCT IMAGE ====================
+
+@app.route('/admin/product/remove-image/<int:product_id>/<int:image_index>')
+@login_required
+@admin_required
+def admin_remove_product_image(product_id, image_index):
+    """Remove a specific additional image from a product"""
+    product = Product.query.get_or_404(product_id)
+    
+    # Get current images
+    images = product.get_images()
+    
+    # Check if index is valid
+    if image_index < 0 or image_index >= len(images):
+        flash('Invalid image index', 'error')
+        return redirect(url_for('admin_edit_product', id=product_id))
+    
+    # Get the image URL to delete from Cloudinary
+    image_url = images[image_index]
+    
+    # Delete from Cloudinary
+    if image_url:
+        try:
+            # Extract public_id from Cloudinary URL
+            public_id = image_url.split('/')[-1].split('.')[0]
+            cloudinary.uploader.destroy(f"olivintra_products/gallery/{public_id}")
+        except Exception as e:
+            print(f"❌ Failed to delete from Cloudinary: {e}")
+    
+    # Remove from list
+    images.pop(image_index)
+    product.set_images(images)
+    
+    db.session.commit()
+    flash('Image removed successfully', 'success')
+    return redirect(url_for('admin_edit_product', id=product_id))
+
 # ==================== FIXED: ADMIN DELETE PRODUCT WITH CLOUDINARY SUPPORT ====================
 
 @app.route('/admin/product/delete/<int:id>', methods=['GET', 'POST'])
