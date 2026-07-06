@@ -83,7 +83,7 @@
                         <!-- Image -->
                         <div>
                             {% if product.image %}
-                            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" class="w-12 h-12 object-cover rounded">
+                            <img src="{{ product.image }}" alt="{{ product.name }}" class="w-12 h-12 object-cover rounded">
                             {% else %}
                             <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
                                 <i class="fas fa-image"></i>
