@@ -893,7 +893,7 @@
                     </a>
                 </div>
 
-                <!-- Center: Navigation (Desktop) - FIXED: All links point to correct pages -->
+                <!-- Center: Navigation (Desktop) -->
                 <nav class="hidden md:flex items-center gap-6" aria-label="Main Navigation">
                     <a href="/" class="nav-link {% if request.path == '/' %}active text-brand-accent{% else %}text-gray-600 hover:text-brand-accent{% endif %}">
                         Home
@@ -903,7 +903,6 @@
                     </a>
                     <a href="/my-orders" class="nav-link {% if '/my-orders' in request.path %}active text-brand-accent{% else %}text-gray-600 hover:text-brand-accent{% endif %}">
                         My Orders
-                    
                     </a>
                     <a href="/about" class="nav-link {% if '/about' in request.path %}active text-brand-accent{% else %}text-gray-600 hover:text-brand-accent{% endif %}">
                         About Us
@@ -961,9 +960,6 @@
             </div>
         </div>
     </header>
-
-    
-   
 
     <!-- ============================================= -->
     <!-- CONTENT BLOCK -->
@@ -1032,7 +1028,6 @@
                 <button class="quick-reply text-xs bg-gray-100 hover:bg-[#4d502c] hover:text-white px-3 py-1.5 rounded-full transition text-gray-700">
                     COD
                 </button>
-                
             </div>
 
             <!-- Chat Input -->
@@ -1047,8 +1042,6 @@
             </div>
         </div>
     </div>
-
-    
 
     <script>
         // Auto-hide flash messages
