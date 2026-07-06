@@ -8,7 +8,7 @@
         <div class="bg-white border border-gray-100 rounded-lg overflow-hidden">
             <!-- Main Image -->
             <div class="aspect-[3/4] bg-gray-100 relative" id="mainImageContainer">
-                <img src="{% if product.image %}{{ url_for('static', filename='uploads/' + product.image) }}{% else %}https://via.placeholder.com/600x800/cccccc/333333?text=Olivintra{% endif %}" 
+                <img src="{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/600x800/cccccc/333333?text=Olivintra{% endif %}" 
                      alt="{{ product.name }}" 
                      id="mainProductImage"
                      class="w-full h-full object-cover">
@@ -54,8 +54,8 @@
                 <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2" id="thumbnailContainer">
                     {% for img in all_images %}
                     <div class="w-20 h-20 flex-shrink-0 border-2 {% if loop.first %}border-[#4d502c]{% else %}border-gray-200{% endif %} rounded-lg overflow-hidden cursor-pointer thumbnail hover:border-[#4d502c] transition" 
-                         onclick="changeImage('{{ url_for('static', filename='uploads/' + img) }}', this, {{ loop.index }})">
-                        <img src="{{ url_for('static', filename='uploads/' + img) }}" 
+                         onclick="changeImage('{{ img }}', this, {{ loop.index }})">
+                        <img src="{{ img }}" 
                              alt="Product image {{ loop.index }}" 
                              class="w-full h-full object-cover">
                     </div>
@@ -297,7 +297,7 @@
                 <a href="/product/{{ related_product.slug }}">
                     <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
                         <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                            style="background-image: url('{% if related_product.image %}{{ url_for('static', filename='uploads/' + related_product.image) }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
+                            style="background-image: url('{% if related_product.image %}{{ related_product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
                         </div>
                         {% set related_sizes = related_product.get_sizes() %}
                         {% if related_sizes %}
