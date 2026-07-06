@@ -1489,7 +1489,7 @@ def admin_hero_add():
     
     return render_template('admin/hero_add.html')
 
-@app.route('/admin/hero/edit/<int:id>', methods(['GET', 'POST'])
+@app.route('/admin/hero/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_hero_edit(id):
@@ -1859,7 +1859,7 @@ def api_submit_review():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/contact', methods(['POST'])
+@app.route('/api/contact', methods=['POST'])
 def api_contact():
     try:
         data = request.get_json()
