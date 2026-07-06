@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-
-
 {% block content %}
 
 
@@ -77,7 +75,7 @@
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 bg-gray-100 rounded overflow-hidden">
                                     <div class="w-full h-full bg-cover bg-center"
-                                         style="background-image: url('{% if item.product and item.product.image %}{{ url_for('static', filename='uploads/' + item.product.image) }}{% else %}https://via.placeholder.com/50/cccccc/333333?text=No{% endif %}');">
+                                         style="background-image: url('{% if item.product and item.product.image %}{{ item.product.image }}{% else %}https://via.placeholder.com/50/cccccc/333333?text=No{% endif %}');">
                                     </div>
                                 </div>
                                 <div>
@@ -169,9 +167,8 @@
 </div>
 
 <!-- Footer -->
- <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Follow Us Section -->
         <div class="text-center mb-6">
             <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
             <div class="flex justify-center gap-6">
@@ -185,9 +182,11 @@
                    aria-label="Instagram">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <!-- You can add more social icons here -->
             </div>
         </div>
+    </div>
+</footer>
+
 <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-4 space-y-3">
