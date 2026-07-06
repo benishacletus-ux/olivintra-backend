@@ -11,7 +11,7 @@
             <div class="flex gap-4 border-b border-gray-200 py-4" id="cart-item-{{ item.product.id }}-{{ item.size }}">
                 <div class="w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                     <div class="w-full h-full bg-cover bg-center"
-                         style="background-image: url('{% if item.product.image %}{{ url_for('static', filename='uploads/' + item.product.image) }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=Olivintra{% endif %}');">
+                         style="background-image: url('{% if item.product.image %}{{ item.product.image }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=Olivintra{% endif %}');">
                     </div>
                 </div>
                 <div class="flex-1">
@@ -49,7 +49,6 @@
             <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 sticky top-20">
                 <h2 class="text-lg font-semibold text-brand-dark mb-4">Order Summary</h2>
                 
-                <!-- ✅ FIXED: Use subtotal and shipping separately -->
                 <div class="space-y-2 border-b border-gray-200 pb-4">
                     <div class="flex justify-between text-sm">
                         <span>Subtotal</span>
@@ -67,7 +66,6 @@
                     </div>
                 </div>
                 
-                <!-- ✅ Original Amount = subtotal + shipping -->
                 <div class="flex justify-between text-sm border-b border-gray-200 py-2 mt-1">
                     <span class="font-medium text-gray-700">Original Amount</span>
                     <span class="font-medium">₹{{ "%.2f"|format(subtotal + shipping) }}</span>
