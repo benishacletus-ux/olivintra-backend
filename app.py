@@ -1171,6 +1171,8 @@ def admin_categories():
     categories = Category.query.order_by(Category.name).all()
     return render_template('admin/categories.html', categories=categories)
 
+# ==================== FIXED: ADMIN ADD CATEGORY WITH CLOUDINARY ====================
+
 @app.route('/admin/category/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -1180,14 +1182,20 @@ def admin_add_category():
         slug = request.form.get('slug') or re.sub(r'[^a-z0-9-]', '-', name.lower().replace(' ', '-'))
         description = request.form.get('description')
         
+        # ============ UPLOAD CATEGORY IMAGE TO CLOUDINARY ============
         image = None
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"category_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_categories",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
+                return render_template('admin/add_category.html')
         
         category = Category(name=name, slug=slug, description=description, image=image)
         db.session.add(category)
@@ -1196,6 +1204,8 @@ def admin_add_category():
         return redirect(url_for('admin_categories'))
     
     return render_template('admin/add_category.html')
+
+# ==================== FIXED: ADMIN EDIT CATEGORY WITH CLOUDINARY ====================
 
 @app.route('/admin/category/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1208,18 +1218,18 @@ def admin_edit_category(id):
         category.slug = request.form.get('slug') or re.sub(r'[^a-z0-9-]', '-', category.name.lower().replace(' ', '-'))
         category.description = request.form.get('description')
         
+        # ============ UPDATE CATEGORY IMAGE WITH CLOUDINARY ============
         if 'image' in request.files and request.files['image'].filename:
-            if category.image:
-                old_path = os.path.join(app.config['UPLOAD_FOLDER'], category.image)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            
             file = request.files['image']
-            filename = secure_filename(file.filename)
-            filename = f"category_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            category.image = filename
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="olivintra_categories",
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                )
+                category.image = upload_result['secure_url']
+            except Exception as e:
+                flash(f'Image upload failed: {str(e)}', 'error')
         
         db.session.commit()
         flash('Category updated successfully', 'success')
@@ -1227,21 +1237,32 @@ def admin_edit_category(id):
     
     return render_template('admin/edit_category.html', category=category)
 
+# ==================== FIXED: ADMIN DELETE CATEGORY WITH CLOUDINARY ====================
+
 @app.route('/admin/category/delete/<int:id>')
 @login_required
 @admin_required
 def admin_delete_category(id):
     category = Category.query.get_or_404(id)
     
-    if category.image:
-        old_path = os.path.join(app.config['UPLOAD_FOLDER'], category.image)
-        if os.path.exists(old_path):
-            os.remove(old_path)
-    
-    db.session.delete(category)
-    db.session.commit()
-    flash('Category deleted successfully', 'success')
-    return redirect(url_for('admin_categories'))
+    try:
+        # ============ DELETE CATEGORY IMAGE FROM CLOUDINARY ============
+        if category.image:
+            try:
+                public_id = category.image.split('/')[-1].split('.')[0]
+                cloudinary.uploader.destroy(f"olivintra_categories/{public_id}")
+            except:
+                pass
+        
+        db.session.delete(category)
+        db.session.commit()
+        flash('Category deleted successfully', 'success')
+        return redirect(url_for('admin_categories'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting category: ' + str(e), 'error')
+        return redirect(url_for('admin_categories'))
 
 @app.route('/admin/messages')
 @login_required
