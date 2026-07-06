@@ -1140,20 +1140,60 @@ def admin_delete_product(id):
         # Delete main image
         if product.image:
             try:
-                # Extract public_id from Cloudinary URL
-                public_id = product.image.split('/')[-1].split('.')[0]
-                cloudinary.uploader.destroy(f"olivintra_products/{public_id}")
-            except:
-                pass
+                # Check if it's a Cloudinary URL
+                if 'cloudinary' in product.image or 'res.cloudinary.com' in product.image:
+                    # Extract public_id from Cloudinary URL
+                    # URL format: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/public_id.jpg
+                    parts = product.image.split('/')
+                    # Get the last part with extension
+                    filename = parts[-1]
+                    # Remove extension to get public_id
+                    public_id = filename.split('.')[0]
+                    # Get the folder path (everything after upload/ and before filename)
+                    # Find 'upload' in the URL
+                    for i, part in enumerate(parts):
+                        if part == 'upload':
+                            # Get folder path (everything after upload and before filename)
+                            folder_parts = parts[i+2:-1]  # Skip version number
+                            folder = '/'.join(folder_parts) if folder_parts else ''
+                            if folder:
+                                full_public_id = f"{folder}/{public_id}"
+                            else:
+                                full_public_id = public_id
+                            break
+                    else:
+                        # Fallback: use the last part without extension
+                        full_public_id = public_id
+                    
+                    cloudinary.uploader.destroy(full_public_id)
+                    print(f"✅ Deleted main image: {full_public_id}")
+            except Exception as e:
+                print(f"❌ Failed to delete main image from Cloudinary: {e}")
         
         # Delete additional images
         images = product.get_images()
         for img in images:
             try:
-                public_id = img.split('/')[-1].split('.')[0]
-                cloudinary.uploader.destroy(f"olivintra_products/gallery/{public_id}")
-            except:
-                pass
+                if img and ('cloudinary' in img or 'res.cloudinary.com' in img):
+                    parts = img.split('/')
+                    filename = parts[-1]
+                    public_id = filename.split('.')[0]
+                    for i, part in enumerate(parts):
+                        if part == 'upload':
+                            folder_parts = parts[i+2:-1]
+                            folder = '/'.join(folder_parts) if folder_parts else ''
+                            if folder:
+                                full_public_id = f"{folder}/{public_id}"
+                            else:
+                                full_public_id = public_id
+                            break
+                    else:
+                        full_public_id = public_id
+                    
+                    cloudinary.uploader.destroy(full_public_id)
+                    print(f"✅ Deleted additional image: {full_public_id}")
+            except Exception as e:
+                print(f"❌ Failed to delete additional image from Cloudinary: {e}")
         
         # Delete product from database
         db.session.delete(product)
@@ -1167,6 +1207,10 @@ def admin_delete_product(id):
         
     except Exception as e:
         db.session.rollback()
+        print(f"❌ Delete product error: {e}")
+        import traceback
+        traceback.print_exc()
+        
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': str(e)}), 500
         
@@ -1445,7 +1489,7 @@ def admin_hero_add():
     
     return render_template('admin/hero_add.html')
 
-@app.route('/admin/hero/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/admin/hero/edit/<int:id>', methods(['GET', 'POST'])
 @login_required
 @admin_required
 def admin_hero_edit(id):
@@ -1815,7 +1859,7 @@ def api_submit_review():
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/contact', methods=['POST'])
+@app.route('/api/contact', methods(['POST'])
 def api_contact():
     try:
         data = request.get_json()
