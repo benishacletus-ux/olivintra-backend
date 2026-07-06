@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-
-
 {% block content %}
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -76,11 +74,10 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {% for product in products %}
         <div class="group cursor-pointer">
-            <!-- ============ FIX: Correct product link ============ -->
             <a href="/product/{{ product.slug }}">
                 <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
                     <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                         style="background-image: url('{% if product.image %}{{ url_for('static', filename='uploads/' + product.image) }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
+                         style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
                     </div>
                     
                     {% set all_images = product.get_all_images() %}
@@ -323,7 +320,6 @@
                    aria-label="Instagram">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <!-- You can add more social icons here -->
             </div>
         </div>
 <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
