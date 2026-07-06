@@ -32,7 +32,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="w-16 h-12 bg-gray-100 rounded overflow-hidden">
                             <div class="w-full h-full bg-cover bg-center"
-                                 style="background-image: url('{% if slide.image %}{{ url_for('static', filename='uploads/' + slide.image) }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=No{% endif %}');">
+                                 style="background-image: url('{% if slide.image %}{{ slide.image }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=No{% endif %}');">
                             </div>
                         </div>
                     </td>
@@ -77,4 +77,18 @@
         </table>
     </div>
 </div>
+
+<script>
+console.log('📸 Hero Slides page loaded - Cloudinary images supported');
+</script>
+
+<style>
+.status-badge {
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+</style>
 {% endblock %}
