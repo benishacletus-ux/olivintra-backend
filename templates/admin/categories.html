@@ -22,7 +22,7 @@
         <!-- Category Image -->
         <div class="relative h-48 bg-gray-100">
             {% if category.image %}
-            <img src="{{ url_for('static', filename='uploads/' + category.image) }}" 
+            <img src="{{ category.image }}" 
                  alt="{{ category.name }}" 
                  class="w-full h-full object-cover">
             {% else %}
@@ -90,5 +90,21 @@ function deleteCategory(id) {
         window.location.href = '/admin/category/delete/' + id;
     }
 }
+
+console.log('📂 Categories page loaded - Cloudinary images supported');
 </script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.group:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+</style>
 {% endblock %}
