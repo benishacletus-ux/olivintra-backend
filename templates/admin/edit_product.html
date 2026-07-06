@@ -118,7 +118,7 @@
             <div class="mt-1 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                 <div id="mainImagePreview" class="w-24 h-24 sm:w-32 sm:h-32 border border-gray-300 rounded-lg overflow-hidden flex-shrink-0">
                     {% if product.image %}
-                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="w-full h-full object-cover">
+                    <img src="{{ product.image }}" class="w-full h-full object-cover">
                     {% else %}
                     <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
                         <i class="fas fa-image text-2xl sm:text-3xl"></i>
@@ -144,7 +144,7 @@
                     {% for img in images %}
                     <div class="relative group">
                         <div class="w-16 h-16 sm:w-20 sm:h-20 border border-gray-300 rounded-lg overflow-hidden">
-                            <img src="{{ url_for('static', filename='uploads/' + img) }}" 
+                            <img src="{{ img }}" 
                                  alt="Product image" 
                                  class="w-full h-full object-cover">
                         </div>
