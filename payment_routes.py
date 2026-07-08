@@ -11,17 +11,25 @@ from config import Config
 
 payment_bp = Blueprint('payment', __name__, url_prefix='/payment')
 
-# Initialize Razorpay client
-# Initialize Razorpay client - HARDCODED FOR TESTING
-client = razorpay.Client(auth=("rzp_live_TAtAEnldDnXK7o", "GKGmGY8S0IKYXIqxgTni1VY5"))
+# ==================== LIVE RAZORPAY KEYS ====================
+RAZORPAY_KEY_ID = "rzp_live_TAtAEnldDnXK7o"
+RAZORPAY_KEY_SECRET = "GKGmGY8S0IKYXIqxgTni1VY5"
+
+# Initialize Razorpay client with Live keys
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 
 @payment_bp.route('/initiate', methods=['POST'])
-# REMOVED: @login_required - Allow guest checkout
 def initiate_payment():
     """Initiate payment for an order - Guest checkout enabled"""
     try:
+        print("=" * 50)
+        print("🔄 PAYMENT INITIATION STARTED")
+        print("=" * 50)
+        
         data = request.get_json()
+        print(f"📦 Received data: {data}")
+        
         order_id = data.get('order_id')
         amount = data.get('amount')
         currency = data.get('currency', 'INR')
@@ -29,29 +37,39 @@ def initiate_payment():
         customer_email = data.get('customer_email')
         customer_phone = data.get('customer_phone')
         
+        print(f"📋 Order ID: {order_id}")
+        print(f"💰 Amount: {amount}")
+        print(f"👤 Customer: {customer_name}")
+        
         # Validate amount
         if not amount or amount <= 0:
+            print("❌ Invalid amount")
             return jsonify({'error': 'Invalid amount'}), 400
         
         # Get order from database
         order = Order.query.get(order_id)
         if not order:
+            print(f"❌ Order not found: {order_id}")
             return jsonify({'error': 'Order not found'}), 404
+        
+        print(f"✅ Order found: {order.order_number}")
         
         # Check if order already has a razorpay order
         if order.razorpay_order_id:
+            print(f"✅ Using existing Razorpay order: {order.razorpay_order_id}")
             return jsonify({
                 'success': True,
                 'order_id': order.razorpay_order_id,
                 'amount': float(amount),
                 'currency': currency,
-                'key_id': Config.RAZORPAY_KEY_ID,
+                'key_id': RAZORPAY_KEY_ID,  # ✅ Use the hardcoded key
                 'customer_name': customer_name,
                 'customer_email': customer_email,
                 'customer_phone': customer_phone
             })
         
         # Create Razorpay order
+        print("🔄 Creating Razorpay order...")
         try:
             razorpay_order = client.order.create({
                 'amount': int(amount * 100),  # Amount in paise
@@ -64,32 +82,37 @@ def initiate_payment():
                     'customer_email': customer_email
                 }
             })
+            print(f"✅ Razorpay order created: {razorpay_order['id']}")
         except Exception as e:
-            print(f"Razorpay order creation error: {e}")
+            print(f"❌ Razorpay order creation error: {e}")
             return jsonify({'error': f'Payment gateway error: {str(e)}'}), 500
         
         # Save razorpay_order_id to order
         order.razorpay_order_id = razorpay_order['id']
         db.session.commit()
         
+        print("✅ Payment initiation successful")
+        print("=" * 50)
+        
         return jsonify({
             'success': True,
             'order_id': razorpay_order['id'],
             'amount': float(amount),
             'currency': currency,
-            'key_id': Config.RAZORPAY_KEY_ID,
+            'key_id': RAZORPAY_KEY_ID,  # ✅ Use the hardcoded key
             'customer_name': customer_name,
             'customer_email': customer_email,
             'customer_phone': customer_phone
         })
         
     except Exception as e:
-        print(f"Payment initiation error: {e}")
+        print(f"❌ Payment initiation error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
 @payment_bp.route('/verify', methods=['POST'])
-# REMOVED: @login_required - Allow guest checkout
 def verify_payment():
     """Verify payment signature - Guest checkout enabled"""
     try:
@@ -97,6 +120,12 @@ def verify_payment():
         razorpay_payment_id = data.get('razorpay_payment_id')
         razorpay_order_id = data.get('razorpay_order_id')
         razorpay_signature = data.get('razorpay_signature')
+        
+        print("=" * 50)
+        print("🔍 VERIFYING PAYMENT")
+        print(f"Payment ID: {razorpay_payment_id}")
+        print(f"Order ID: {razorpay_order_id}")
+        print("=" * 50)
         
         # Verify signature
         params_dict = {
@@ -118,6 +147,8 @@ def verify_payment():
             # Clear cart
             session.pop('cart', None)
             
+            print(f"✅ Payment verified for order #{order.order_number}")
+            
             return jsonify({
                 'success': True,
                 'message': 'Payment verified successfully',
@@ -127,8 +158,10 @@ def verify_payment():
         return jsonify({'error': 'Order not found'}), 404
         
     except razorpay.errors.SignatureVerificationError:
+        print("❌ Invalid signature")
         return jsonify({'error': 'Invalid signature'}), 400
     except Exception as e:
+        print(f"❌ Verification error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -136,11 +169,9 @@ def verify_payment():
 def webhook():
     """Handle Razorpay webhook for real-time updates"""
     try:
-        # Verify webhook signature
         payload = request.get_data()
         signature = request.headers.get('X-Razorpay-Signature')
         
-        # Verify signature
         expected_signature = hmac.new(
             Config.RAZORPAY_WEBHOOK_SECRET.encode(),
             payload,
@@ -181,18 +212,17 @@ def webhook():
         return jsonify({'success': True}), 200
         
     except Exception as e:
+        print(f"❌ Webhook error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
-# ✅ Payment Checkout Route
 @payment_bp.route('/checkout/<int:order_id>')
 def payment_checkout(order_id):
     """Payment checkout page - Guest checkout enabled"""
-    from models import Product  # Import here to avoid circular imports
+    from models import Product
     
     order = Order.query.get_or_404(order_id)
     
-    # Calculate cart items
     cart_items = []
     subtotal = 0
     for item in order.items:
@@ -232,7 +262,6 @@ def payment_failed(order_id):
 
 
 @payment_bp.route('/retry/<int:order_id>')
-# REMOVED: @login_required - Allow guest checkout
 def payment_retry(order_id):
     """Retry payment for failed order - Guest checkout enabled"""
     order = Order.query.get_or_404(order_id)
