@@ -46,9 +46,9 @@ class Config:
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     
     # ==================== RAZORPAY PAYMENT CONFIGURATION ====================
-    RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID') or 'rzp_test_YourKeyIdHere'
-    RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET') or 'YourSecretKeyHere'
-    RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET') or 'whsec_YourWebhookSecret'
+    RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID') or 'rzp_live_TAtAEnldDnXK7o'
+    RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET') or 'GKGmGY8S0IKYXIqxgTni1VY5'
+    RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET') or 'whsec_123456789'
     
     # ==================== PAYMENT SETTINGS ====================
     PAYMENT_CURRENCY = os.environ.get('PAYMENT_CURRENCY') or 'INR'
