@@ -12,7 +12,8 @@ from config import Config
 payment_bp = Blueprint('payment', __name__, url_prefix='/payment')
 
 # Initialize Razorpay client
-client = razorpay.Client(auth=(Config.RAZORPAY_KEY_ID, Config.RAZORPAY_KEY_SECRET))
+# Initialize Razorpay client - HARDCODED FOR TESTING
+client = razorpay.Client(auth=("rzp_live_TAtAEnldDnXK7o", "GKGmGY8S0IKYXIqxgTni1VY5"))
 
 
 @payment_bp.route('/initiate', methods=['POST'])
