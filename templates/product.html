@@ -8,7 +8,7 @@
         <div class="bg-white border border-gray-100 rounded-lg overflow-hidden">
             <!-- Main Image -->
             <div class="aspect-[3/4] bg-gray-100 relative" id="mainImageContainer">
-                <img src="{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/600x800/cccccc/333333?text=Olivintra{% endif %}" 
+                <img src="{{ product.get_optimized_image(600, 800) }}" 
                      alt="{{ product.name }}" 
                      id="mainProductImage"
                      class="w-full h-full object-cover">
@@ -47,7 +47,7 @@
                 </span>
                 
                 <!-- Image Counter -->
-                {% set all_images = product.get_all_images() %}
+                {% set all_images = product.get_optimized_images(600, 800) %}
                 {% if all_images|length > 1 %}
                 <span class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
                     <i class="fas fa-images mr-1"></i> 1 / {{ all_images|length }}
@@ -330,9 +330,10 @@
             <div class="group cursor-pointer">
                 <a href="/product/{{ related_product.slug }}">
                     <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
-                        <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                            style="background-image: url('{% if related_product.image %}{{ related_product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
-                        </div>
+                        <img src="{{ related_product.get_optimized_image(300, 400) }}" 
+                             alt="{{ related_product.name }}"
+                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             loading="lazy">
                         {% set related_sizes = related_product.get_sizes() %}
                         {% if related_sizes %}
                         <div class="absolute bottom-2 left-2 flex flex-wrap gap-1">
@@ -344,6 +345,12 @@
                             {% endif %}
                         </div>
                         {% endif %}
+                        <!-- ============ FREE SIZE BADGE ============ -->
+                        {% if related_product.is_free_size %}
+                        <span class="absolute bottom-2 left-2 bg-green-600 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fas fa-check-circle"></i> Free Size
+                        </span>
+                        {% endif %}
                         {% if not related_product.in_stock %}
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
                             <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">Out of Stock</span>
@@ -352,6 +359,14 @@
                     </div>
                     <h4 class="text-[11px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate">{{ related_product.name }}</h4>
                     <p class="text-[11px] sm:text-xs text-gray-500 font-medium">₹{{ "%.2f"|format(related_product.price) }}</p>
+                    <!-- ============ FREE SIZE TEXT ============ -->
+                    {% if related_product.is_free_size %}
+                    <div class="mt-0.5">
+                        <span class="text-[9px] text-green-600 font-medium">
+                            <i class="fas fa-check-circle"></i> Free Size
+                        </span>
+                    </div>
+                    {% endif %}
                     <p class="text-[9px] {% if related_product.in_stock %}text-green-600{% else %}text-red-600{% endif %}">
                         {% if related_product.in_stock %}<i class="fas fa-check-circle"></i> In Stock{% else %}<i class="fas fa-times-circle"></i> Out of Stock{% endif %}
                     </p>
