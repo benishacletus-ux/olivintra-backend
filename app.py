@@ -942,7 +942,7 @@ def admin_add_product():
             flash('Please select at least one size or check "Free Size"', 'error')
             return render_template('admin/add_product.html', categories=categories)
         
-        # ============ UPLOAD MAIN IMAGE TO CLOUDINARY ============
+        # ============ UPLOAD MAIN IMAGE TO CLOUDINARY WITH FIXED SIZE ============
         image = None
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
@@ -950,7 +950,12 @@ def admin_add_product():
                 upload_result = cloudinary.uploader.upload(
                     file,
                     folder="olivintra_products",
-                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp'],
+                    width=800,
+                    height=1067,
+                    crop='fill',
+                    gravity='auto',
+                    quality='auto'
                 )
                 image = upload_result['secure_url']
             except Exception as e:
@@ -960,7 +965,7 @@ def admin_add_product():
             flash('Main image is required', 'error')
             return render_template('admin/add_product.html', categories=categories)
         
-        # ============ UPLOAD ADDITIONAL IMAGES TO CLOUDINARY ============
+        # ============ UPLOAD ADDITIONAL IMAGES WITH FIXED SIZE ============
         images_list = []
         if 'images[]' in request.files:
             files = request.files.getlist('images[]')
@@ -975,7 +980,12 @@ def admin_add_product():
                         upload_result = cloudinary.uploader.upload(
                             file,
                             folder="olivintra_products/gallery",
-                            allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                            allowed_formats=['jpg', 'jpeg', 'png', 'webp'],
+                            width=800,
+                            height=1067,
+                            crop='fill',
+                            gravity='auto',
+                            quality='auto'
                         )
                         images_list.append(upload_result['secure_url'])
                     except Exception as e:
@@ -998,7 +1008,7 @@ def admin_add_product():
             material=material,
             care_instructions=care_instructions,
             sizes=sizes_json,
-            is_free_size=is_free_size  # <-- ADDED
+            is_free_size=is_free_size
         )
         product.set_images(images_list)
         
@@ -1078,20 +1088,25 @@ def admin_edit_product(id):
             flash('Please select at least one size or check "Free Size"', 'error')
             return render_template('admin/edit_product.html', product=product, categories=categories)
         
-        # ============ UPDATE MAIN IMAGE WITH CLOUDINARY ============
+        # ============ UPDATE MAIN IMAGE WITH CLOUDINARY WITH FIXED SIZE ============
         if 'image' in request.files and request.files['image'].filename:
             file = request.files['image']
             try:
                 upload_result = cloudinary.uploader.upload(
                     file,
                     folder="olivintra_products",
-                    allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                    allowed_formats=['jpg', 'jpeg', 'png', 'webp'],
+                    width=800,
+                    height=1067,
+                    crop='fill',
+                    gravity='auto',
+                    quality='auto'
                 )
                 product.image = upload_result['secure_url']
             except Exception as e:
                 flash(f'Image upload failed: {str(e)}', 'error')
         
-        # ============ UPDATE ADDITIONAL IMAGES WITH CLOUDINARY ============
+        # ============ UPDATE ADDITIONAL IMAGES WITH FIXED SIZE ============
         if 'images[]' in request.files:
             files = request.files.getlist('images[]')
             current_images = product.get_images()
@@ -1107,7 +1122,12 @@ def admin_edit_product(id):
                         upload_result = cloudinary.uploader.upload(
                             file,
                             folder="olivintra_products/gallery",
-                            allowed_formats=['jpg', 'jpeg', 'png', 'webp']
+                            allowed_formats=['jpg', 'jpeg', 'png', 'webp'],
+                            width=800,
+                            height=1067,
+                            crop='fill',
+                            gravity='auto',
+                            quality='auto'
                         )
                         new_images.append(upload_result['secure_url'])
                     except Exception as e:
