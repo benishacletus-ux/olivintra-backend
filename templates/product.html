@@ -30,6 +30,13 @@
                 <span class="absolute top-4 left-4 bg-red-500 text-white text-sm px-3 py-1 rounded">Sale</span>
                 {% endif %}
                 
+                <!-- ============ FREE SIZE BADGE ============ -->
+                {% if product.is_free_size %}
+                <span class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                    <i class="fas fa-check-circle mr-1"></i> Free Size
+                </span>
+                {% endif %}
+                
                 <!-- Stock Status Badge -->
                 <span class="absolute bottom-4 left-4 px-3 py-1 rounded text-sm font-medium {% if product.in_stock %}bg-green-500 text-white{% else %}bg-red-500 text-white{% endif %}">
                     {% if product.in_stock %}
@@ -124,9 +131,23 @@
             </div>
             {% endif %}
 
-            <!-- Size Selection -->
+            <!-- ============ SIZE SELECTION WITH FREE SIZE SUPPORT ============ -->
             {% set sizes = product.get_sizes() %}
-            {% if sizes %}
+            
+            {% if product.is_free_size %}
+            <!-- Free Size - No size selection needed -->
+            <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                    <p class="text-sm font-semibold text-brand-dark">Free Size</p>
+                    <span class="text-xs text-gray-500">(No size selection needed)</span>
+                </div>
+                <input type="hidden" name="selected_size" id="selectedSize" value="Free Size">
+                <input type="hidden" name="sizeInput" id="sizeInput" value="Free Size">
+                <p class="text-xs text-gray-400 mt-1">This product is available in one free size.</p>
+            </div>
+            {% elif sizes and sizes|length > 0 %}
+            <!-- Regular Size Selection -->
             <div class="border-t border-gray-200 pt-4">
                 <p class="text-sm font-semibold text-brand-dark">Select Size <span class="text-red-500">*</span></p>
                 <div class="flex flex-wrap gap-2 mt-2" id="sizeContainer">
@@ -137,8 +158,21 @@
                     {% endfor %}
                 </div>
                 <input type="hidden" name="selected_size" id="selectedSize" value="">
+                <input type="hidden" name="sizeInput" id="sizeInput" value="">
                 <p class="text-xs text-red-500 mt-1 hidden" id="sizeError">⚠️ Please select a size before adding to cart</p>
                 <p class="text-xs text-gray-400 mt-1">Please select a size to add to cart</p>
+            </div>
+            {% else %}
+            <!-- No sizes available -->
+            <div class="border-t border-gray-200 pt-4">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                    <p class="text-sm font-semibold text-brand-dark">Free Size</p>
+                    <span class="text-xs text-gray-500">(No size selection needed)</span>
+                </div>
+                <input type="hidden" name="selected_size" id="selectedSize" value="Free Size">
+                <input type="hidden" name="sizeInput" id="sizeInput" value="Free Size">
+                <p class="text-xs text-gray-400 mt-1">This product is available in one free size.</p>
             </div>
             {% endif %}
 
@@ -166,7 +200,7 @@
             {% if product.in_stock %}
             <form action="{{ url_for('add_to_cart') }}" method="POST" class="flex flex-col sm:flex-row gap-3 pt-4" id="add-to-cart-form">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="size" id="sizeInput" value="">
+                <input type="hidden" name="size" id="sizeInputHidden" value="{% if product.is_free_size %}Free Size{% endif %}">
                 <input type="hidden" name="quantity" id="quantityInput" value="1">
                 
                 <div class="flex items-center border border-gray-300 rounded" id="qty-control">
@@ -408,6 +442,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var sizeError = document.getElementById('sizeError');
     var addToCartBtn = document.getElementById('addToCartBtn');
     
+    // ============ CHECK IF FREE SIZE ============
+    var isFreeSize = document.querySelector('input[name="sizeInput"]');
+    if (isFreeSize && isFreeSize.value === 'Free Size') {
+        // Free size - auto-select
+        document.getElementById('selectedSize').value = 'Free Size';
+        document.getElementById('sizeInputHidden').value = 'Free Size';
+        console.log('✅ Free size product - auto-selected');
+    }
+    
     if (sizeOptions.length > 0) {
         sizeOptions.forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -435,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 selectedSize = size;
                 sizeInput.value = size;
+                document.getElementById('sizeInputHidden').value = size;
                 
                 // Hide error if visible
                 sizeError.classList.add('hidden');
@@ -446,8 +490,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var form = document.getElementById('add-to-cart-form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            var selectedSize = document.getElementById('sizeInput').value;
+            var selectedSize = document.getElementById('sizeInputHidden').value;
             var sizeOptions = document.querySelectorAll('.size-option');
+            var isFreeSize = document.querySelector('input[name="sizeInput"]');
+            
+            // If free size, skip validation
+            if (isFreeSize && isFreeSize.value === 'Free Size') {
+                return true;
+            }
             
             // Check if size is selected
             if (sizeOptions.length > 0 && !selectedSize) {
