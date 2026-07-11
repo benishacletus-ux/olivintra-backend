@@ -104,6 +104,10 @@ class Product(db.Model):
     material = db.Column(db.String(100))
     care_instructions = db.Column(db.Text)
     sizes = db.Column(db.Text)  # JSON array for sizes like ["S", "M", "L", "XL", "XXL"]
+    
+    # ============ ADDED: Free Size Field ============
+    is_free_size = db.Column(db.Boolean, default=False)  # <-- NEW FIELD
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -210,6 +214,11 @@ class Product(db.Model):
         """Get sizes as a comma-separated string for display"""
         sizes = self.get_sizes()
         return ', '.join(sizes) if sizes else 'No sizes'
+    
+    # ==================== FREE SIZE HELPER ====================
+    def is_free_size_product(self):
+        """Check if product is free size"""
+        return self.is_free_size or not self.get_sizes()
     
     def __repr__(self):
         return f'<Product {self.name}>'
