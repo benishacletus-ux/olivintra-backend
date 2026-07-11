@@ -2,8 +2,8 @@
 
 {% block content %}
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         <!-- Product Images Gallery -->
         <div class="bg-white border border-gray-100 rounded-lg overflow-hidden">
             <!-- Main Image -->
@@ -17,28 +17,28 @@
                 {% if not product.in_stock %}
                 <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div class="text-center">
-                        <span class="bg-red-600 text-white text-2xl font-bold px-8 py-4 rounded-lg transform -rotate-12 shadow-2xl inline-block">
+                        <span class="bg-red-600 text-white text-xl sm:text-2xl font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transform -rotate-12 shadow-2xl inline-block">
                             <i class="fas fa-times-circle mr-2"></i> Out of Stock
                         </span>
-                        <p class="text-white text-sm mt-4">This product is currently unavailable</p>
+                        <p class="text-white text-xs sm:text-sm mt-3 sm:mt-4">This product is currently unavailable</p>
                     </div>
                 </div>
                 {% endif %}
                 
                 <!-- Sale Badge -->
                 {% if product.original_price %}
-                <span class="absolute top-4 left-4 bg-red-500 text-white text-sm px-3 py-1 rounded">Sale</span>
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-red-500 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded">Sale</span>
                 {% endif %}
                 
                 <!-- ============ FREE SIZE BADGE ============ -->
                 {% if product.is_free_size %}
-                <span class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                <span class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-green-600 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full">
                     <i class="fas fa-check-circle mr-1"></i> Free Size
                 </span>
                 {% endif %}
                 
                 <!-- Stock Status Badge -->
-                <span class="absolute bottom-4 left-4 px-3 py-1 rounded text-sm font-medium {% if product.in_stock %}bg-green-500 text-white{% else %}bg-red-500 text-white{% endif %}">
+                <span class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-medium {% if product.in_stock %}bg-green-500 text-white{% else %}bg-red-500 text-white{% endif %}">
                     {% if product.in_stock %}
                     <i class="fas fa-check-circle mr-1"></i> In Stock
                     {% else %}
@@ -49,7 +49,7 @@
                 <!-- Image Counter -->
                 {% set all_images = product.get_optimized_images(600, 800) %}
                 {% if all_images|length > 1 %}
-                <span class="absolute bottom-4 right-4 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                <span class="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 rounded-full">
                     <i class="fas fa-images mr-1"></i> 1 / {{ all_images|length }}
                 </span>
                 {% endif %}
@@ -57,10 +57,10 @@
             
             <!-- Thumbnails -->
             {% if all_images|length > 1 %}
-            <div class="p-4 border-t border-gray-100">
+            <div class="p-3 sm:p-4 border-t border-gray-100">
                 <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2" id="thumbnailContainer">
                     {% for img in all_images %}
-                    <div class="w-20 h-20 flex-shrink-0 border-2 {% if loop.first %}border-[#4d502c]{% else %}border-gray-200{% endif %} rounded-lg overflow-hidden cursor-pointer thumbnail hover:border-[#4d502c] transition" 
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 border-2 {% if loop.first %}border-[#4d502c]{% else %}border-gray-200{% endif %} rounded-lg overflow-hidden cursor-pointer thumbnail hover:border-[#4d502c] transition" 
                          onclick="changeImage('{{ img }}', this, {{ loop.index }})">
                         <img src="{{ img }}" 
                              alt="Product image {{ loop.index }}" 
@@ -73,8 +73,8 @@
         </div>
 
         <!-- Product Info -->
-        <div class="space-y-4">
-            <nav class="text-sm text-gray-500">
+        <div class="space-y-4 sm:space-y-5">
+            <nav class="text-xs sm:text-sm text-gray-500">
                 <a href="/shop" class="hover:text-brand-accent">Shop</a>
                 {% if product.category %}
                 <span class="mx-2">/</span>
@@ -82,10 +82,10 @@
                 {% endif %}
             </nav>
 
-            <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark">{{ product.name }}</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-serif text-brand-dark">{{ product.name }}</h1>
 
             <div class="flex items-center gap-2">
-                <div class="flex items-center text-amber-500 text-sm">
+                <div class="flex items-center text-amber-500 text-xs sm:text-sm">
                     {% if reviews %}
                     {% set avg_rating = reviews|map(attribute='rating')|sum / reviews|length %}
                     {% for i in range(5) %}
@@ -102,32 +102,32 @@
                             {% endfor %}
                             {% endif %}
                 </div>
-                <span class="text-gray-500 text-sm">({{ reviews|length }} reviews)</span>
+                <span class="text-gray-500 text-xs sm:text-sm">({{ reviews|length }} reviews)</span>
             </div>
 
             <div>
-                <span class="text-2xl font-bold text-brand-dark">₹{{ "%.2f"|format(product.price) }}</span>
+                <span class="text-xl sm:text-2xl font-bold text-brand-dark">₹{{ "%.2f"|format(product.price) }}</span>
                 {% if product.original_price %}
-                <span class="text-sm text-gray-400 line-through ml-2">₹{{ "%.2f"|format(product.original_price) }}</span>
-                <span class="text-sm text-red-500 ml-2">Save ₹{{ "%.2f"|format(product.original_price - product.price) }}</span>
+                <span class="text-xs sm:text-sm text-gray-400 line-through ml-2">₹{{ "%.2f"|format(product.original_price) }}</span>
+                <span class="text-xs sm:text-sm text-red-500 ml-2">Save ₹{{ "%.2f"|format(product.original_price - product.price) }}</span>
                 {% endif %}
             </div>
 
-            <div class="prose prose-sm text-gray-600">
+            <div class="prose prose-sm text-gray-600 text-sm sm:text-base">
                 {{ product.description|safe }}
             </div>
 
             {% if product.material %}
             <div>
-                <p class="text-sm font-semibold text-brand-dark">Material</p>
-                <p class="text-sm text-gray-600">{{ product.material }}</p>
+                <p class="text-sm sm:text-base font-semibold text-brand-dark">Material</p>
+                <p class="text-sm sm:text-base text-gray-600">{{ product.material }}</p>
             </div>
             {% endif %}
 
             {% if product.care_instructions %}
             <div>
-                <p class="text-sm font-semibold text-brand-dark">Care Instructions</p>
-                <p class="text-sm text-gray-600">{{ product.care_instructions }}</p>
+                <p class="text-sm sm:text-base font-semibold text-brand-dark">Care Instructions</p>
+                <p class="text-sm sm:text-base text-gray-600">{{ product.care_instructions }}</p>
             </div>
             {% endif %}
 
@@ -136,106 +136,106 @@
             
             {% if product.is_free_size %}
             <!-- Free Size - No size selection needed -->
-            <div class="border-t border-gray-200 pt-4">
+            <div class="border-t border-gray-200 pt-3 sm:pt-4">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-check-circle text-green-600"></i>
-                    <p class="text-sm font-semibold text-brand-dark">Free Size</p>
-                    <span class="text-xs text-gray-500">(No size selection needed)</span>
+                    <i class="fas fa-check-circle text-green-600 text-sm sm:text-base"></i>
+                    <p class="text-sm sm:text-base font-semibold text-brand-dark">Free Size</p>
+                    <span class="text-xs sm:text-sm text-gray-500">(No size selection needed)</span>
                 </div>
                 <input type="hidden" name="selected_size" id="selectedSize" value="Free Size">
                 <input type="hidden" name="sizeInput" id="sizeInput" value="Free Size">
-                <p class="text-xs text-gray-400 mt-1">This product is available in one free size.</p>
+                <p class="text-xs sm:text-sm text-gray-400 mt-1">This product is available in one free size.</p>
             </div>
             {% elif sizes and sizes|length > 0 %}
             <!-- Regular Size Selection -->
-            <div class="border-t border-gray-200 pt-4">
-                <p class="text-sm font-semibold text-brand-dark">Select Size <span class="text-red-500">*</span></p>
+            <div class="border-t border-gray-200 pt-3 sm:pt-4">
+                <p class="text-sm sm:text-base font-semibold text-brand-dark">Select Size <span class="text-red-500">*</span></p>
                 <div class="flex flex-wrap gap-2 mt-2" id="sizeContainer">
                     {% for size in sizes %}
-                    <button type="button" class="size-option px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="{{ size }}">
+                    <button type="button" class="size-option px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm sm:text-base font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="{{ size }}">
                         {{ size }}
                     </button>
                     {% endfor %}
                 </div>
                 <input type="hidden" name="selected_size" id="selectedSize" value="">
                 <input type="hidden" name="sizeInput" id="sizeInput" value="">
-                <p class="text-xs text-red-500 mt-1 hidden" id="sizeError">⚠️ Please select a size before adding to cart</p>
-                <p class="text-xs text-gray-400 mt-1">Please select a size to add to cart</p>
+                <p class="text-xs sm:text-sm text-red-500 mt-1 hidden" id="sizeError">⚠️ Please select a size before adding to cart</p>
+                <p class="text-xs sm:text-sm text-gray-400 mt-1">Please select a size to add to cart</p>
             </div>
             {% else %}
             <!-- No sizes available -->
-            <div class="border-t border-gray-200 pt-4">
+            <div class="border-t border-gray-200 pt-3 sm:pt-4">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-check-circle text-green-600"></i>
-                    <p class="text-sm font-semibold text-brand-dark">Free Size</p>
-                    <span class="text-xs text-gray-500">(No size selection needed)</span>
+                    <i class="fas fa-check-circle text-green-600 text-sm sm:text-base"></i>
+                    <p class="text-sm sm:text-base font-semibold text-brand-dark">Free Size</p>
+                    <span class="text-xs sm:text-sm text-gray-500">(No size selection needed)</span>
                 </div>
                 <input type="hidden" name="selected_size" id="selectedSize" value="Free Size">
                 <input type="hidden" name="sizeInput" id="sizeInput" value="Free Size">
-                <p class="text-xs text-gray-400 mt-1">This product is available in one free size.</p>
+                <p class="text-xs sm:text-sm text-gray-400 mt-1">This product is available in one free size.</p>
             </div>
             {% endif %}
 
             <!-- Stock Availability -->
-            <div class="border-t border-gray-200 pt-4">
-                <p class="text-sm font-semibold text-brand-dark">Availability</p>
+            <div class="border-t border-gray-200 pt-3 sm:pt-4">
+                <p class="text-sm sm:text-base font-semibold text-brand-dark">Availability</p>
                 <div class="mt-1">
                     {% if product.in_stock %}
-                    <p class="text-sm text-green-600 font-medium">
+                    <p class="text-sm sm:text-base text-green-600 font-medium">
                         <i class="fas fa-check-circle"></i> In Stock
                         {% if product.stock > 0 %}
                         <span class="text-gray-500 font-normal">({{ product.stock }} available)</span>
                         {% endif %}
                     </p>
                     {% else %}
-                    <p class="text-sm text-red-600 font-medium">
+                    <p class="text-sm sm:text-base text-red-600 font-medium">
                         <i class="fas fa-times-circle"></i> Out of Stock
                     </p>
-                    <p class="text-xs text-gray-500 mt-1">This product is currently unavailable. Click "Notify Me" below to get notified when it's back.</p>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">This product is currently unavailable. Click "Notify Me" below to get notified when it's back.</p>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Add to Cart / Out of Stock -->
             {% if product.in_stock %}
-            <form action="{{ url_for('add_to_cart') }}" method="POST" class="flex flex-col sm:flex-row gap-3 pt-4" id="add-to-cart-form">
+            <form action="{{ url_for('add_to_cart') }}" method="POST" class="flex flex-col sm:flex-row gap-3 pt-3 sm:pt-4" id="add-to-cart-form">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <input type="hidden" name="size" id="sizeInputHidden" value="{% if product.is_free_size %}Free Size{% endif %}">
                 <input type="hidden" name="quantity" id="quantityInput" value="1">
                 
                 <div class="flex items-center border border-gray-300 rounded" id="qty-control">
-                    <button type="button" class="px-3 py-2 text-gray-600 hover:bg-gray-100 qty-btn" data-delta="-1">−</button>
+                    <button type="button" class="px-3 py-2.5 text-gray-600 hover:bg-gray-100 qty-btn text-sm sm:text-base" data-delta="-1">−</button>
                     <input type="number" name="quantity_display" id="quantity-display" value="1" min="1" max="{{ product.stock }}"
-                        class="w-12 text-center py-2 border-0 focus:outline-none" readonly>
-                    <button type="button" class="px-3 py-2 text-gray-600 hover:bg-gray-100 qty-btn" data-delta="1">+</button>
+                        class="w-12 text-center py-2.5 border-0 focus:outline-none text-sm sm:text-base" readonly>
+                    <button type="button" class="px-3 py-2.5 text-gray-600 hover:bg-gray-100 qty-btn text-sm sm:text-base" data-delta="1">+</button>
                 </div>
-                <button type="submit" class="bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition flex-1" id="addToCartBtn" {% if product.stock==0 %}disabled{% endif %}>
+                <button type="submit" class="bg-brand-dark text-white px-6 py-2.5 sm:py-3 rounded hover:bg-brand-accent transition flex-1 text-sm sm:text-base" id="addToCartBtn" {% if product.stock==0 %}disabled{% endif %}>
                     <i class="fas fa-shopping-bag mr-2"></i> Add to Cart
                 </button>
             </form>
             {% else %}
-            <div class="flex flex-col gap-3 pt-4">
-                <button class="bg-gray-400 text-white px-6 py-3 rounded cursor-not-allowed flex-1" disabled>
+            <div class="flex flex-col gap-3 pt-3 sm:pt-4">
+                <button class="bg-gray-400 text-white px-6 py-3 rounded cursor-not-allowed flex-1 text-sm sm:text-base" disabled>
                     <i class="fas fa-times-circle mr-2"></i> Out of Stock
                 </button>
                 <button onclick="notifyMe('{{ product.name }}')" 
-                        class="bg-[#4d502c] text-white px-6 py-3 rounded hover:bg-[#3d4022] transition flex-1">
+                        class="bg-[#4d502c] text-white px-6 py-3 rounded hover:bg-[#3d4022] transition flex-1 text-sm sm:text-base">
                     <i class="fas fa-bell mr-2"></i> Notify Me When Available
                 </button>
             </div>
             {% endif %}
 
             <!-- WhatsApp Inquiry -->
-            <div class="border-t border-gray-200 pt-4">
+            <div class="border-t border-gray-200 pt-3 sm:pt-4">
                 <a href="{{ whatsapp_url }}?text=Hi! I'm interested in {{ product.name }} (₹{{ "%.2f"|format(product.price) }}) - {{ url_for('product_detail', slug=product.slug, _external=True) }}" 
                    target="_blank" 
-                   class="inline-flex items-center gap-2 text-[#4d502c] hover:text-[#3d4022] transition text-sm">
-                    <i class="fab fa-whatsapp text-xl"></i>
+                   class="inline-flex items-center gap-2 text-[#4d502c] hover:text-[#3d4022] transition text-sm sm:text-base">
+                    <i class="fab fa-whatsapp text-xl sm:text-2xl"></i>
                     <span>Inquire about this product on WhatsApp</span>
                 </a>
             </div>
 
-            <div class="border-t border-gray-200 pt-4 text-sm text-gray-500 space-y-1">
+            <div class="border-t border-gray-200 pt-3 sm:pt-4 text-xs sm:text-sm text-gray-500 space-y-1">
                 <p><i class="fas fa-truck mr-2"></i> Free shipping on orders above ₹2999</p>
                 <p><i class="fas fa-undo mr-2"></i> Easy returns within 7 days</p>
                 <p><i class="fas fa-lock mr-2"></i> Secure payment</p>
@@ -244,32 +244,32 @@
     </div>
 
     <!-- Reviews Section -->
-    <div class="mt-16 border-t border-gray-200 pt-8">
-        <div class="flex justify-between items-center mb-6">
+    <div class="mt-12 sm:mt-16 border-t border-gray-200 pt-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
             <div>
-                <h2 class="text-2xl font-serif text-brand-dark">Customer Reviews</h2>
+                <h2 class="text-xl sm:text-2xl font-serif text-brand-dark">Customer Reviews</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <div class="flex items-center gap-0.5 text-amber-500">
                         {% if reviews %}
                         {% set avg_rating = reviews|map(attribute='rating')|sum / reviews|length %}
                         {% for i in range(5) %}
-                        {% if i < avg_rating|round(0, 'floor' ) %} <i class="fas fa-star text-sm"></i>
+                        {% if i < avg_rating|round(0, 'floor' ) %} <i class="fas fa-star text-xs sm:text-sm"></i>
                             {% elif i < avg_rating|round(0, 'ceil' ) and avg_rating % 1>= 0.5 %}
-                                <i class="fas fa-star-half-alt text-sm"></i>
+                                <i class="fas fa-star-half-alt text-xs sm:text-sm"></i>
                                 {% else %}
-                                <i class="far fa-star text-sm"></i>
+                                <i class="far fa-star text-xs sm:text-sm"></i>
                                 {% endif %}
                                 {% endfor %}
                                 {% else %}
                                 {% for i in range(5) %}
-                                <i class="far fa-star text-sm"></i>
+                                <i class="far fa-star text-xs sm:text-sm"></i>
                                 {% endfor %}
                                 {% endif %}
                     </div>
-                    <span class="text-sm text-gray-500">({{ reviews|length }} reviews)</span>
+                    <span class="text-xs sm:text-sm text-gray-500">({{ reviews|length }} reviews)</span>
                 </div>
             </div>
-            <button onclick="showReviewMessage()" class="text-brand-accent hover:underline text-sm">
+            <button onclick="showReviewMessage()" class="text-brand-accent hover:underline text-sm sm:text-base">
                 <i class="fas fa-pen mr-1"></i> Write a Review
             </button>
         </div>
@@ -281,12 +281,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <div class="flex items-center gap-2">
-                            <div class="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold">
+                            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-sm sm:text-base">
                                 {{ review.customer_name[0].upper() }}
                             </div>
                             <div>
-                                <p class="font-semibold text-brand-dark">{{ review.customer_name }}</p>
-                                <div class="flex items-center gap-1 text-amber-500 text-sm">
+                                <p class="font-semibold text-brand-dark text-sm sm:text-base">{{ review.customer_name }}</p>
+                                <div class="flex items-center gap-1 text-amber-500 text-xs sm:text-sm">
                                     {% for i in range(review.rating) %}
                                     <i class="fas fa-star"></i>
                                     {% endfor %}
@@ -297,21 +297,21 @@
                             </div>
                         </div>
                         {% if review.is_verified %}
-                        <span class="text-xs text-green-600 ml-12"><i class="fas fa-check-circle"></i> Verified Purchase</span>
+                        <span class="text-xs text-green-600 ml-10 sm:ml-12"><i class="fas fa-check-circle"></i> Verified Purchase</span>
                         {% endif %}
                     </div>
                     <span class="text-xs text-gray-400">{{ review.created_at.strftime('%d %b %Y') }}</span>
                 </div>
                 {% if review.title %}
-                <h4 class="font-medium text-brand-dark mt-2">{{ review.title }}</h4>
+                <h4 class="font-medium text-brand-dark mt-2 text-sm sm:text-base">{{ review.title }}</h4>
                 {% endif %}
-                <p class="text-gray-600 text-sm mt-1">{{ review.comment }}</p>
+                <p class="text-gray-600 text-sm sm:text-base mt-1">{{ review.comment }}</p>
             </div>
             {% endfor %}
             {% else %}
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-star text-4xl text-gray-300 mb-4 block"></i>
-                <p class="text-lg font-medium">No reviews yet</p>
+                <p class="text-base sm:text-lg font-medium">No reviews yet</p>
                 <p class="text-sm mt-1">Be the first to review this product</p>
                 <button onclick="showReviewMessage()" class="inline-block mt-4 bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition text-sm">
                     <i class="fas fa-pen mr-2"></i> Write a Review
@@ -323,9 +323,9 @@
 
     <!-- Related Products -->
     {% if related %}
-    <div class="mt-16">
-        <h2 class="text-2xl font-serif text-brand-dark mb-6">You May Also Like</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="mt-12 sm:mt-16">
+        <h2 class="text-xl sm:text-2xl font-serif text-brand-dark mb-4 sm:mb-6">You May Also Like</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {% for related_product in related %}
             <div class="group cursor-pointer">
                 <a href="/product/{{ related_product.slug }}">
@@ -338,36 +338,36 @@
                         {% if related_sizes %}
                         <div class="absolute bottom-2 left-2 flex flex-wrap gap-1">
                             {% for size in related_sizes[:3] %}
-                            <span class="bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded">{{ size }}</span>
+                            <span class="bg-black/60 text-white text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded">{{ size }}</span>
                             {% endfor %}
                             {% if related_sizes|length > 3 %}
-                            <span class="bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded">+{{ related_sizes|length - 3 }}</span>
+                            <span class="bg-black/60 text-white text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded">+{{ related_sizes|length - 3 }}</span>
                             {% endif %}
                         </div>
                         {% endif %}
                         <!-- ============ FREE SIZE BADGE ============ -->
                         {% if related_product.is_free_size %}
-                        <span class="absolute bottom-2 left-2 bg-green-600 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <i class="fas fa-check-circle"></i> Free Size
+                        <span class="absolute bottom-2 left-2 bg-green-600 text-white text-[7px] sm:text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fas fa-check-circle text-[6px] sm:text-[8px]"></i> Free Size
                         </span>
                         {% endif %}
                         {% if not related_product.in_stock %}
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">Out of Stock</span>
+                            <span class="bg-red-600 text-white text-[8px] sm:text-[10px] font-bold px-2 py-1 rounded">Out of Stock</span>
                         </div>
                         {% endif %}
                     </div>
-                    <h4 class="text-[11px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate">{{ related_product.name }}</h4>
-                    <p class="text-[11px] sm:text-xs text-gray-500 font-medium">₹{{ "%.2f"|format(related_product.price) }}</p>
+                    <h4 class="text-[10px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate">{{ related_product.name }}</h4>
+                    <p class="text-[10px] sm:text-xs text-gray-500 font-medium">₹{{ "%.2f"|format(related_product.price) }}</p>
                     <!-- ============ FREE SIZE TEXT ============ -->
                     {% if related_product.is_free_size %}
                     <div class="mt-0.5">
-                        <span class="text-[9px] text-green-600 font-medium">
-                            <i class="fas fa-check-circle"></i> Free Size
+                        <span class="text-[8px] sm:text-[9px] text-green-600 font-medium">
+                            <i class="fas fa-check-circle text-[6px] sm:text-[8px]"></i> Free Size
                         </span>
                     </div>
                     {% endif %}
-                    <p class="text-[9px] {% if related_product.in_stock %}text-green-600{% else %}text-red-600{% endif %}">
+                    <p class="text-[8px] sm:text-[9px] {% if related_product.in_stock %}text-green-600{% else %}text-red-600{% endif %}">
                         {% if related_product.in_stock %}<i class="fas fa-check-circle"></i> In Stock{% else %}<i class="fas fa-times-circle"></i> Out of Stock{% endif %}
                     </p>
                 </a>
@@ -386,19 +386,19 @@
                 <i class="fas fa-info-circle text-amber-600 text-3xl"></i>
             </div>
             <h3 class="text-xl font-serif text-brand-dark mb-3">Reviews After Delivery</h3>
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 text-sm sm:text-base mb-4">
                 You can write a review for this product only after you have purchased and received it.
             </p>
             <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                <p class="text-sm text-gray-500">To write a review:</p>
-                <ol class="text-sm text-gray-600 text-left list-decimal list-inside mt-2 space-y-1">
+                <p class="text-xs sm:text-sm text-gray-500">To write a review:</p>
+                <ol class="text-xs sm:text-sm text-gray-600 text-left list-decimal list-inside mt-2 space-y-1">
                     <li>Purchase this product</li>
                     <li>Wait for delivery</li>
                     <li>Visit <a href="/my-orders" class="text-brand-accent hover:underline">My Orders</a></li>
                     <li>Click "Write Review" on your delivered order</li>
                 </ol>
             </div>
-            <button onclick="closeReviewMessage()" class="bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition">
+            <button onclick="closeReviewMessage()" class="bg-brand-dark text-white px-6 py-2 rounded hover:bg-brand-accent transition text-sm sm:text-base">
                 Got it!
             </button>
         </div>
@@ -656,8 +656,8 @@ function showNotification(message) {
 .size-option {
     transition: all 0.2s ease;
     touch-action: manipulation;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 48px;
+    min-height: 48px;
 }
 
 .size-option:hover {
@@ -676,8 +676,10 @@ function showNotification(message) {
 
 @media (max-width: 640px) {
     .size-option {
-        padding: 10px 14px !important;
-        font-size: 13px !important;
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
     }
 }
 </style>
