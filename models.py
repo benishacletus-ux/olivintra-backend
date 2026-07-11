@@ -151,6 +151,60 @@ class Product(db.Model):
         images.extend(self.get_images())
         return images
     
+    # ==================== IMAGE OPTIMIZATION HELPER ====================
+    def get_optimized_image(self, width=300, height=400):
+        """Get optimized product image URL with Cloudinary transformations
+        
+        Args:
+            width: Desired width (default 300)
+            height: Desired height (default 400)
+        
+        Returns:
+            Optimized image URL with Cloudinary transformations
+        """
+        if not self.image:
+            return f"https://via.placeholder.com/{width}x{height}/cccccc/333333?text=Olivintra"
+        
+        # Check if it's a Cloudinary URL
+        if 'res.cloudinary.com' in self.image or 'cloudinary' in self.image:
+            parts = self.image.split('/upload/')
+            if len(parts) == 2:
+                # Add transformations for consistent 3:4 ratio
+                return f"{parts[0]}/upload/w_{width},h_{height},c_fill,f_auto,q_auto/{parts[1]}"
+        
+        # Return original if not Cloudinary
+        return self.image
+    
+    def get_optimized_images(self, width=300, height=400):
+        """Get optimized URLs for all images (main + additional)
+        
+        Args:
+            width: Desired width (default 300)
+            height: Desired height (default 400)
+        
+        Returns:
+            List of optimized image URLs
+        """
+        images = []
+        
+        # Main image
+        if self.image:
+            images.append(self.get_optimized_image(width, height))
+        
+        # Additional images
+        for img in self.get_images():
+            if img:
+                if 'res.cloudinary.com' in img or 'cloudinary' in img:
+                    parts = img.split('/upload/')
+                    if len(parts) == 2:
+                        images.append(f"{parts[0]}/upload/w_{width},h_{height},c_fill,f_auto,q_auto/{parts[1]}")
+                    else:
+                        images.append(img)
+                else:
+                    images.append(img)
+        
+        return images
+    
     # ==================== SIZE HELPER METHODS - FIXED ====================
     def get_sizes(self):
         """Get list of sizes from JSON - handles all formats"""
