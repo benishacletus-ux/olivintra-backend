@@ -76,9 +76,11 @@
         <div class="group cursor-pointer">
             <a href="/product/{{ product.slug }}">
                 <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
-                    <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
-                         style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}');">
-                    </div>
+                    <!-- ============ IMAGE WITH FIXED ASPECT RATIO ============ -->
+                    <img src="{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}" 
+                         alt="{{ product.name }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                         loading="lazy">
                     
                     {% set all_images = product.get_all_images() %}
                     {% if all_images|length > 1 %}
@@ -318,7 +320,7 @@
 </div>
 
 <!-- Footer -->
- <footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Follow Us Section -->
         <div class="text-center mb-6">
@@ -336,7 +338,8 @@
                 </a>
             </div>
         </div>
-<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
+    </div>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-4 space-y-3">
             <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
