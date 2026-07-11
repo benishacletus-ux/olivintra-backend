@@ -76,8 +76,8 @@
         <div class="group cursor-pointer">
             <a href="/product/{{ product.slug }}">
                 <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
-                    <!-- ============ IMAGE WITH FIXED ASPECT RATIO ============ -->
-                    <img src="{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400/cccccc/333333?text=Olivintra{% endif %}" 
+                    <!-- ============ IMAGE WITH OPTIMIZED URL ============ -->
+                    <img src="{{ product.get_optimized_image(300, 400) }}" 
                          alt="{{ product.name }}"
                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                          loading="lazy">
