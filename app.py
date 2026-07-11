@@ -884,7 +884,7 @@ def admin_products():
     products = Product.query.all()
     return render_template('admin/products.html', products=products)
 
-# ==================== FIXED: ADMIN ADD PRODUCT WITH SIZE HANDLING AND CLOUDINARY ====================
+# ==================== ADMIN ADD PRODUCT WITH SIZE HANDLING, FREE SIZE AND CLOUDINARY ====================
 
 @app.route('/admin/product/add', methods=['GET', 'POST'])
 @login_required
@@ -915,23 +915,32 @@ def admin_add_product():
         material = request.form.get('material')
         care_instructions = request.form.get('care_instructions')
         
-        sizes_str = request.form.get('sizes', '').strip()
-        if sizes_str:
-            sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
-            if sizes_str.startswith('"') and sizes_str.endswith('"'):
-                sizes_str = sizes_str[1:-1]
-            try:
-                sizes_list = json.loads(sizes_str)
-                if isinstance(sizes_list, list):
+        # ============ FREE SIZE HANDLING ============
+        is_free_size = 'is_free_size' in request.form
+        
+        # ============ SIZE HANDLING ============
+        sizes_json = None
+        if not is_free_size:
+            sizes_str = request.form.get('sizes', '').strip()
+            if sizes_str:
+                sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
+                if sizes_str.startswith('"') and sizes_str.endswith('"'):
+                    sizes_str = sizes_str[1:-1]
+                try:
+                    sizes_list = json.loads(sizes_str)
+                    if isinstance(sizes_list, list):
+                        sizes_json = json.dumps(sizes_list)
+                    else:
+                        sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
+                        sizes_json = json.dumps(sizes_list)
+                except:
+                    sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
                     sizes_json = json.dumps(sizes_list)
-                else:
-                    sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
-                    sizes_json = json.dumps(sizes_list)
-            except:
-                sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
-                sizes_json = json.dumps(sizes_list)
-        else:
-            sizes_json = None
+        
+        # ============ VALIDATION: Either free_size OR sizes required ============
+        if not is_free_size and not sizes_json:
+            flash('Please select at least one size or check "Free Size"', 'error')
+            return render_template('admin/add_product.html', categories=categories)
         
         # ============ UPLOAD MAIN IMAGE TO CLOUDINARY ============
         image = None
@@ -947,6 +956,9 @@ def admin_add_product():
             except Exception as e:
                 flash(f'Image upload failed: {str(e)}', 'error')
                 return render_template('admin/add_product.html', categories=categories)
+        else:
+            flash('Main image is required', 'error')
+            return render_template('admin/add_product.html', categories=categories)
         
         # ============ UPLOAD ADDITIONAL IMAGES TO CLOUDINARY ============
         images_list = []
@@ -969,6 +981,7 @@ def admin_add_product():
                     except Exception as e:
                         flash(f'Failed to upload {file.filename}: {str(e)}', 'error')
         
+        # ============ CREATE PRODUCT ============
         product = Product(
             name=name,
             slug=slug,
@@ -984,19 +997,26 @@ def admin_add_product():
             in_stock=stock > 0,
             material=material,
             care_instructions=care_instructions,
-            sizes=sizes_json
+            sizes=sizes_json,
+            is_free_size=is_free_size  # <-- ADDED
         )
         product.set_images(images_list)
         
         db.session.add(product)
         db.session.commit()
-        sizes_list_display = json.loads(sizes_json) if sizes_json else []
-        flash(f'Product added successfully with {len(images_list)} additional images and {len(sizes_list_display)} sizes', 'success')
+        
+        # ============ SUCCESS MESSAGE ============
+        if is_free_size:
+            flash(f'✅ Product "{name}" added successfully as Free Size!', 'success')
+        else:
+            sizes_list_display = json.loads(sizes_json) if sizes_json else []
+            flash(f'✅ Product "{name}" added successfully with {len(sizes_list_display)} sizes and {len(images_list)} images!', 'success')
+        
         return redirect(url_for('admin_products'))
     
     return render_template('admin/add_product.html', categories=categories)
 
-# ==================== FIXED: ADMIN EDIT PRODUCT WITH SIZE HANDLING AND CLOUDINARY ====================
+# ==================== ADMIN EDIT PRODUCT WITH SIZE HANDLING, FREE SIZE AND CLOUDINARY ====================
 
 @app.route('/admin/product/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1028,23 +1048,35 @@ def admin_edit_product(id):
         product.material = request.form.get('material')
         product.care_instructions = request.form.get('care_instructions')
         
-        sizes_str = request.form.get('sizes', '').strip()
-        if sizes_str:
-            sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
-            if sizes_str.startswith('"') and sizes_str.endswith('"'):
-                sizes_str = sizes_str[1:-1]
-            try:
-                sizes_list = json.loads(sizes_str)
-                if isinstance(sizes_list, list):
+        # ============ FREE SIZE HANDLING ============
+        product.is_free_size = 'is_free_size' in request.form
+        
+        # ============ SIZE HANDLING ============
+        if not product.is_free_size:
+            sizes_str = request.form.get('sizes', '').strip()
+            if sizes_str:
+                sizes_str = sizes_str.replace('\\"', '"').replace('"[', '[').replace(']"', ']').replace('""', '"')
+                if sizes_str.startswith('"') and sizes_str.endswith('"'):
+                    sizes_str = sizes_str[1:-1]
+                try:
+                    sizes_list = json.loads(sizes_str)
+                    if isinstance(sizes_list, list):
+                        product.sizes = json.dumps(sizes_list)
+                    else:
+                        sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
+                        product.sizes = json.dumps(sizes_list)
+                except:
+                    sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
                     product.sizes = json.dumps(sizes_list)
-                else:
-                    sizes_list = [s.strip() for s in str(sizes_list).split(',') if s.strip()]
-                    product.sizes = json.dumps(sizes_list)
-            except:
-                sizes_list = [s.strip() for s in sizes_str.split(',') if s.strip()]
-                product.sizes = json.dumps(sizes_list)
+            else:
+                product.sizes = None
         else:
             product.sizes = None
+        
+        # ============ VALIDATION: Either free_size OR sizes required ============
+        if not product.is_free_size and not product.sizes:
+            flash('Please select at least one size or check "Free Size"', 'error')
+            return render_template('admin/edit_product.html', product=product, categories=categories)
         
         # ============ UPDATE MAIN IMAGE WITH CLOUDINARY ============
         if 'image' in request.files and request.files['image'].filename:
@@ -1085,7 +1117,14 @@ def admin_edit_product(id):
             product.set_images(current_images)
         
         db.session.commit()
-        flash('Product updated successfully', 'success')
+        
+        # ============ SUCCESS MESSAGE ============
+        if product.is_free_size:
+            flash(f'✅ Product "{product.name}" updated successfully as Free Size!', 'success')
+        else:
+            sizes_list = product.get_sizes()
+            flash(f'✅ Product "{product.name}" updated successfully with {len(sizes_list)} sizes!', 'success')
+        
         return redirect(url_for('admin_products'))
     
     return render_template('admin/edit_product.html', product=product, categories=categories)
@@ -1127,7 +1166,7 @@ def admin_remove_product_image(product_id, image_index):
     flash('Image removed successfully', 'success')
     return redirect(url_for('admin_edit_product', id=product_id))
 
-# ==================== FIXED: ADMIN DELETE PRODUCT WITH CLOUDINARY SUPPORT ====================
+# ==================== ADMIN DELETE PRODUCT WITH CLOUDINARY SUPPORT ====================
 
 @app.route('/admin/product/delete/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1252,7 +1291,7 @@ def admin_categories():
     categories = Category.query.order_by(Category.name).all()
     return render_template('admin/categories.html', categories=categories)
 
-# ==================== FIXED: ADMIN ADD CATEGORY WITH CLOUDINARY ====================
+# ==================== ADMIN ADD CATEGORY WITH CLOUDINARY ====================
 
 @app.route('/admin/category/add', methods=['GET', 'POST'])
 @login_required
@@ -1286,7 +1325,7 @@ def admin_add_category():
     
     return render_template('admin/add_category.html')
 
-# ==================== FIXED: ADMIN EDIT CATEGORY WITH CLOUDINARY ====================
+# ==================== ADMIN EDIT CATEGORY WITH CLOUDINARY ====================
 
 @app.route('/admin/category/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -1318,7 +1357,7 @@ def admin_edit_category(id):
     
     return render_template('admin/edit_category.html', category=category)
 
-# ==================== FIXED: ADMIN DELETE CATEGORY WITH CLOUDINARY ====================
+# ==================== ADMIN DELETE CATEGORY WITH CLOUDINARY ====================
 
 @app.route('/admin/category/delete/<int:id>')
 @login_required
@@ -1435,7 +1474,7 @@ def admin_review_delete(id):
     flash('Review deleted successfully', 'success')
     return redirect(url_for('admin_reviews'))
 
-# ==================== ADMIN HERO SLIDES - FIXED WITH CLOUDINARY ====================
+# ==================== ADMIN HERO SLIDES WITH CLOUDINARY ====================
 
 @app.route('/admin/hero')
 @login_required
@@ -1624,7 +1663,7 @@ def api_product_detail(slug):
         'rating': float(product.rating) if product.rating else 0,
         'review_count': product.review_count or 0,
         'sizes': json.loads(product.sizes) if product.sizes else [],
-        'is_free_size': product.is_free_size,  # <-- ADDED
+        'is_free_size': product.is_free_size,
         'material': product.material,
         'care_instructions': product.care_instructions,
         'is_featured': product.is_featured,
