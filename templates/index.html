@@ -159,8 +159,15 @@
                     <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
                          style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
                     </div>
+                    <!-- ============ SALE BADGE - ONLY ONCE ============ -->
                     {% if product.original_price %}
                     <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">Sale</span>
+                    {% endif %}
+                    <!-- ============ FREE SIZE BADGE ============ -->
+                    {% if product.is_free_size %}
+                    <span class="absolute top-2 left-2 bg-green-600 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <i class="fas fa-check-circle"></i> Free
+                    </span>
                     {% endif %}
                     {% set all_images = product.get_all_images() %}
                     {% if all_images|length > 1 %}
@@ -216,6 +223,16 @@
                     <div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105"
                          style="background-image: url('{% if product.image %}{{ product.image }}{% else %}https://via.placeholder.com/300x400{% endif %}');">
                     </div>
+                    <!-- ============ SALE BADGE - ONLY ONCE ============ -->
+                    {% if product.original_price %}
+                    <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">Sale</span>
+                    {% endif %}
+                    <!-- ============ FREE SIZE BADGE ============ -->
+                    {% if product.is_free_size %}
+                    <span class="absolute top-2 left-2 bg-green-600 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <i class="fas fa-check-circle"></i> Free
+                    </span>
+                    {% endif %}
                     {% set all_images = product.get_all_images() %}
                     {% if all_images|length > 1 %}
                     <div class="absolute bottom-2 left-2 bg-black/60 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
