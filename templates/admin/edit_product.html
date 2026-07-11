@@ -94,8 +94,21 @@
                       class="mt-1 block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-[#4d502c] focus:border-[#4d502c] transition text-sm md:text-base">{{ product.care_instructions }}</textarea>
         </div>
         
+        <!-- ==================== FREE SIZE TOGGLE ==================== -->
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="is_free_size" id="freeSize" 
+                       {% if product.is_free_size %}checked{% endif %}
+                       class="h-5 w-5 text-[#4d502c] rounded focus:ring-[#4d502c]">
+                <div>
+                    <span class="text-sm font-medium text-gray-700">Free Size</span>
+                    <p class="text-xs text-gray-500">Check this if the product is one-size-fits-all (no size selection needed)</p>
+                </div>
+            </label>
+        </div>
+        
         <!-- ==================== SIZES ==================== -->
-        <div>
+        <div id="sizeSection" {% if product.is_free_size %}style="display:none;"{% endif %}>
             <label class="block text-sm font-medium text-gray-700 mb-2">Available Sizes</label>
             <div class="flex flex-wrap gap-2" id="sizeContainer">
                 <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XS">XS</button>
@@ -227,9 +240,36 @@ document.getElementById('image').addEventListener('change', function(e) {
     }
 });
 
+// ==================== FREE SIZE TOGGLE ====================
+document.getElementById('freeSize').addEventListener('change', function() {
+    var sizeSection = document.getElementById('sizeSection');
+    if (this.checked) {
+        // Hide size section
+        sizeSection.style.display = 'none';
+        // Clear any selected sizes
+        selectedSizes = [];
+        updateSelectedSizesDisplay();
+        document.getElementById('sizesInput').value = '';
+        // Reset size button styles
+        document.querySelectorAll('.size-btn').forEach(function(btn) {
+            btn.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+            btn.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+        });
+    } else {
+        // Show size section
+        sizeSection.style.display = 'block';
+    }
+});
+
 // ==================== SIZE SELECTION ====================
 var selectedSizes = [];
 var existingSizes = document.getElementById('sizesInput').value;
+
+// Check if free size is checked - if so, clear sizes
+var freeSizeCheckbox = document.getElementById('freeSize');
+if (freeSizeCheckbox && freeSizeCheckbox.checked) {
+    existingSizes = '';
+}
 
 // Parse existing sizes - handles both JSON and comma-separated
 if (existingSizes && existingSizes.length > 0) {
@@ -269,6 +309,12 @@ updateSelectedSizesDisplay();
 // Add click handlers
 document.querySelectorAll('.size-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
+        var freeSizeCheckbox = document.getElementById('freeSize');
+        if (freeSizeCheckbox && freeSizeCheckbox.checked) {
+            alert('Product is marked as Free Size. Please uncheck Free Size to select sizes.');
+            return;
+        }
+        
         var size = this.dataset.size;
         var index = selectedSizes.indexOf(size);
         
@@ -279,6 +325,10 @@ document.querySelectorAll('.size-btn').forEach(function(btn) {
             this.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
         } else {
             // Add size
+            if (selectedSizes.length >= 10) {
+                alert('Maximum 10 sizes allowed');
+                return;
+            }
             selectedSizes.push(size);
             this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
             this.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
@@ -354,6 +404,7 @@ function removeImage(productId, imageIndex) {
 document.getElementById('editProductForm').addEventListener('submit', function(e) {
     var imagesInput = document.getElementById('images');
     var currentImages = document.querySelectorAll('.relative.group').length;
+    var freeSizeCheckbox = document.getElementById('freeSize');
     
     // Check image limit
     if (imagesInput.files.length + currentImages > 5) {
@@ -362,19 +413,25 @@ document.getElementById('editProductForm').addEventListener('submit', function(e
         return false;
     }
     
-    // Check if at least one size is selected
-    if (selectedSizes.length === 0) {
+    // Validate sizes based on Free Size checkbox
+    if (!freeSizeCheckbox.checked && selectedSizes.length === 0) {
         e.preventDefault();
-        alert('Please select at least one size for this product');
+        alert('Please select at least one size or check "Free Size" for this product');
         return false;
     }
     
-    // Update hidden input with final sizes (comma-separated)
-    document.getElementById('sizesInput').value = selectedSizes.join(',');
+    // If Free Size is checked, clear sizes
+    if (freeSizeCheckbox.checked) {
+        document.getElementById('sizesInput').value = '';
+    } else {
+        // Update hidden input with final sizes (comma-separated)
+        document.getElementById('sizesInput').value = selectedSizes.join(',');
+    }
 });
 
 console.log('📸 Edit Product - Multiple image upload ready');
 console.log('📏 Current sizes:', selectedSizes);
+console.log('🆓 Free Size:', document.getElementById('freeSize').checked);
 </script>
 
 <style>
@@ -424,6 +481,10 @@ kbd {
         padding: 10px 14px !important;
         font-size: 13px !important;
     }
+}
+
+#sizeSection {
+    transition: all 0.3s ease;
 }
 </style>
 {% endblock %}
