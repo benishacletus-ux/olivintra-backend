@@ -1,20 +1,24 @@
 {% extends "base.html" %}
 
+{% block title %}Shop - Olivintra Premium Ethnic Wear{% endblock %}
+
+{% block meta_description %}Shop premium ethnic wear online at Olivintra. Browse our collection of kurtis, sarees, lehengas, and more. Free shipping above ₹2999. WhatsApp: +91 9037392700{% endblock %}
+
 {% block content %}
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+<section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
     <!-- Search Results Header -->
     {% if search %}
-    <div class="mb-6">
-        <h1 class="text-2xl sm:text-3xl font-serif text-brand-dark">
+    <div class="mb-4 sm:mb-6">
+        <h1 class="text-lg sm:text-2xl lg:text-3xl font-serif text-brand-dark">
             Search Results for "{{ search }}"
         </h1>
-        <p class="text-gray-500 text-sm mt-1">
+        <p class="text-gray-500 text-xs sm:text-sm mt-1">
             Found {{ products|length }} product{% if products|length != 1 %}s{% endif %}
             {% if search_suggestions and search_suggestions|length > 0 %}
             · Related: 
             {% for suggestion in search_suggestions %}
-            <a href="/shop?search={{ suggestion }}" class="text-brand-accent hover:underline inline-block">
+            <a href="/shop?search={{ suggestion }}" class="text-brand-accent hover:underline inline-block text-xs sm:text-sm">
                 {{ suggestion }}
             </a>{% if not loop.last %}, {% endif %}
             {% endfor %}
@@ -24,152 +28,186 @@
     {% endif %}
 
     <!-- Filter Icon and Sort Bar -->
-    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div class="flex items-center gap-3 flex-wrap">
-            <button id="filterToggle" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-gray-50 transition group">
-                <svg class="w-5 h-5 text-gray-600 group-hover:text-[#4d502c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex items-center justify-between mb-4 sm:mb-6 gap-2 sm:gap-4 flex-wrap">
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <button id="filterToggle" class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-gray-50 transition group touchable min-h-[44px] min-w-[44px]">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-[#4d502c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                 </svg>
-                <span class="text-sm font-medium text-gray-600 group-hover:text-[#4d502c]">Filter</span>
+                <span class="text-xs sm:text-sm font-medium text-gray-600 group-hover:text-[#4d502c]">Filter</span>
                 {% if min_price or max_price or selected_category %}
-                <span class="w-2 h-2 bg-[#4d502c] rounded-full"></span>
+                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#4d502c] rounded-full"></span>
                 {% endif %}
             </button>
             
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-1 sm:gap-2">
                 {% if selected_category %}
-                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                <span class="inline-flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-[10px] sm:text-xs">
                     {{ categories|selectattr('slug', 'equalto', selected_category)|map(attribute='name')|first }}
-                    <a href="#" class="remove-filter hover:text-red-500" data-param="category">&times;</a>
+                    <a href="#" class="remove-filter hover:text-red-500 text-xs" data-param="category">&times;</a>
                 </span>
                 {% endif %}
                 {% if min_price %}
-                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                <span class="inline-flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-[10px] sm:text-xs">
                     ₹{{ min_price|round|int }} - {% if max_price %}₹{{ max_price|round|int }}{% else %}∞{% endif %}
-                    <a href="#" class="remove-filter hover:text-red-500" data-param="min_price">&times;</a>
+                    <a href="#" class="remove-filter hover:text-red-500 text-xs" data-param="min_price">&times;</a>
                 </span>
                 {% endif %}
                 {% if max_price and not min_price %}
-                <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-xs">
+                <span class="inline-flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-[#4d502c]/10 text-[#4d502c] rounded-full text-[10px] sm:text-xs">
                     Up to ₹{{ max_price|round|int }}
-                    <a href="#" class="remove-filter hover:text-red-500" data-param="max_price">&times;</a>
+                    <a href="#" class="remove-filter hover:text-red-500 text-xs" data-param="max_price">&times;</a>
                 </span>
                 {% endif %}
             </div>
         </div>
         
-        <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-500 hidden sm:inline">Sort by:</label>
+        <div class="flex items-center gap-1 sm:gap-2">
+            <label class="text-[10px] sm:text-sm text-gray-500 hidden xs:inline">Sort:</label>
             <select id="sortSelect" 
-                    class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:ring-[#4d502c] focus:border-[#4d502c] bg-white">
+                    class="text-[10px] sm:text-sm border border-gray-200 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 focus:ring-[#4d502c] focus:border-[#4d502c] bg-white touchable min-h-[44px]">
                 <option value="newest" {% if sort == 'newest' or not sort %}selected{% endif %}>Newest</option>
-                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
-                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low</option>
+                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High</option>
                 <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Popular</option>
             </select>
         </div>
     </div>
 
-    <!-- Products Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+    <!-- Products Grid - Mobile First -->
+    <div class="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3 lg:gap-4 product-grid">
         {% for product in products %}
-        <div class="group cursor-pointer">
-            <a href="/product/{{ product.slug }}">
-                <div class="bg-white border border-gray-100 aspect-[3/4] mb-2 relative overflow-hidden rounded-lg">
-                    <!-- ============ IMAGE WITH OPTIMIZED URL ============ -->
+        <div class="group cursor-pointer product-card touchable">
+            <a href="/product/{{ product.slug }}" class="block">
+                <div class="bg-white border border-gray-100 aspect-[3/4] mb-1.5 sm:mb-2 relative overflow-hidden rounded-lg product-image-wrapper">
+                    <!-- ============ IMAGE ============ -->
                     <img src="{{ product.get_optimized_image(300, 400) }}" 
                          alt="{{ product.name }}"
-                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                         loading="lazy">
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 product-image"
+                         loading="lazy"
+                         width="300"
+                         height="400"
+                         decoding="async">
                     
-                    {% set all_images = product.get_all_images() %}
-                    {% if all_images|length > 1 %}
-                    <div class="absolute bottom-2 left-2 bg-black/60 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <i class="fas fa-images"></i>
-                        <span>{{ all_images|length }}</span>
+                    <!-- ============ BADGES - Bottom Left ============ -->
+                    <div class="absolute bottom-1 left-1 right-1 flex flex-wrap gap-0.5 sm:gap-1 pointer-events-none z-10">
+                        {% set all_images = product.get_all_images() %}
+                        {% if all_images|length > 1 %}
+                        <span class="bg-black/60 text-white text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 rounded-full flex items-center gap-0.5 pointer-events-auto">
+                            <i class="fas fa-images text-[5px] sm:text-[6px]"></i>
+                            <span>{{ all_images|length }}</span>
+                        </span>
+                        {% endif %}
+                        
+                        {% if product.original_price %}
+                        <span class="bg-red-500 text-white text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 rounded pointer-events-auto font-medium">Sale</span>
+                        {% endif %}
+                        
+                        <!-- ============ FREE SIZE BADGE ============ -->
+                        {% if product.is_free_size %}
+                        <span class="bg-green-600 text-white text-[6px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 rounded-full flex items-center gap-0.5 pointer-events-auto font-medium">
+                            <i class="fas fa-check-circle text-[5px] sm:text-[6px]"></i> 
+                            <span class="hidden xs:inline">Free Size</span>
+                            <span class="xs:hidden">Free</span>
+                        </span>
+                        {% endif %}
+                        
+                        {% if not product.in_stock or product.stock == 0 %}
+                        <span class="bg-red-600 text-white text-[6px] sm:text-[8px] px-1 sm:px-1.5 py-0.5 rounded pointer-events-auto font-medium">Out</span>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     
-                    {% if product.original_price %}
-                    <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded">Sale</span>
-                    {% endif %}
-                    
-                    <!-- ============ FREE SIZE BADGE ============ -->
-                    {% if product.is_free_size %}
-                    <span class="absolute bottom-2 left-2 bg-green-600 text-white text-[8px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <i class="fas fa-check-circle"></i> Free Size
-                    </span>
-                    {% endif %}
-                    
+                    <!-- ============ SIZE TAGS - Top Right ============ -->
                     {% set product_sizes = product.get_sizes() %}
-                    {% if product_sizes %}
-                    <div class="absolute top-2 right-2 flex flex-wrap gap-0.5 justify-end max-w-[60%]">
-                        {% for size in product_sizes[:4] %}
-                        <span class="bg-white/90 text-gray-700 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-sm">{{ size }}</span>
+                    {% if product_sizes and not product.is_free_size %}
+                    <div class="absolute top-1 right-1 flex flex-wrap gap-0.5 justify-end max-w-[65%] z-10">
+                        {% for size in product_sizes[:3] %}
+                        <span class="bg-white/90 text-gray-700 text-[6px] sm:text-[8px] font-medium px-0.5 sm:px-1 py-0.5 rounded shadow-sm size-tag">{{ size }}</span>
                         {% endfor %}
-                        {% if product_sizes|length > 4 %}
-                        <span class="bg-white/90 text-gray-700 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-sm">+{{ product_sizes|length - 4 }}</span>
+                        {% if product_sizes|length > 3 %}
+                        <span class="bg-white/90 text-gray-700 text-[6px] sm:text-[8px] font-medium px-0.5 sm:px-1 py-0.5 rounded shadow-sm size-tag">+{{ product_sizes|length - 3 }}</span>
                         {% endif %}
                     </div>
                     {% endif %}
                     
+                    <!-- ============ OUT OF STOCK OVERLAY ============ -->
                     {% if not product.in_stock or product.stock == 0 %}
-                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div class="text-center">
-                            <span class="bg-red-600 text-white text-xs sm:text-sm font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transform -rotate-12 shadow-lg inline-block">
-                                <i class="fas fa-times-circle mr-1"></i> Out of Stock
-                            </span>
-                        </div>
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                        <span class="bg-red-600 text-white text-[8px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg transform -rotate-12 shadow-lg inline-block">
+                            <i class="fas fa-times-circle mr-0.5 sm:mr-1 text-[6px] sm:text-[10px]"></i> 
+                            <span class="hidden xs:inline">Out of Stock</span>
+                            <span class="xs:hidden">Out</span>
+                        </span>
                     </div>
                     {% endif %}
                 </div>
                 
-                <h4 class="text-[11px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate">{{ product.name }}</h4>
-                <p class="text-[11px] sm:text-xs text-gray-500 font-medium">
+                <!-- ============ PRODUCT INFO ============ -->
+                <h4 class="text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase text-brand-dark tracking-wide truncate product-name">{{ product.name }}</h4>
+                <p class="text-[9px] xs:text-[10px] sm:text-xs text-gray-500 font-medium product-price">
                     ₹{{ "%.2f"|format(product.price) }}
                     {% if product.original_price %}
-                    <span class="line-through text-gray-400 ml-1">₹{{ "%.2f"|format(product.original_price) }}</span>
+                    <span class="line-through text-gray-400 ml-1 text-[8px] sm:text-[10px]">₹{{ "%.2f"|format(product.original_price) }}</span>
                     {% endif %}
                 </p>
                 
                 <!-- ============ SIZE DISPLAY WITH FREE SIZE SUPPORT ============ -->
                 {% if product.is_free_size %}
                 <div class="mt-0.5">
-                    <span class="text-[9px] text-green-600 font-medium">
-                        <i class="fas fa-check-circle"></i> Free Size
+                    <span class="text-[7px] sm:text-[9px] text-green-600 font-medium free-size-badge">
+                        <i class="fas fa-check-circle text-[5px] sm:text-[6px]"></i> Free Size
                     </span>
                 </div>
                 {% elif product_sizes %}
                 <div class="flex flex-wrap gap-0.5 mt-0.5">
                     {% for size in product_sizes[:4] %}
-                    <span class="text-[8px] border border-gray-300 px-1 py-0 rounded text-gray-600">{{ size }}</span>
+                    <span class="text-[6px] sm:text-[8px] border border-gray-300 px-0.5 sm:px-1 py-0 rounded text-gray-600 size-tag">{{ size }}</span>
                     {% endfor %}
                     {% if product_sizes|length > 4 %}
-                    <span class="text-[8px] border border-gray-300 px-1 py-0 rounded text-gray-600">+{{ product_sizes|length - 4 }}</span>
+                    <span class="text-[6px] sm:text-[8px] border border-gray-300 px-0.5 sm:px-1 py-0 rounded text-gray-600 size-tag">+{{ product_sizes|length - 4 }}</span>
                     {% endif %}
                 </div>
                 {% endif %}
                 
-                <div class="mt-1">
+                <div class="mt-0.5 sm:mt-1">
                     {% if product.in_stock and product.stock > 0 %}
-                    <span class="text-[9px] text-green-600 font-medium">
-                        <i class="fas fa-check-circle"></i> In Stock
+                    <span class="text-[7px] sm:text-[9px] text-green-600 font-medium stock-status">
+                        <i class="fas fa-check-circle text-[5px] sm:text-[6px]"></i> In Stock
                     </span>
                     {% else %}
-                    <span class="text-[9px] text-red-600 font-medium">
-                        <i class="fas fa-times-circle"></i> Out of Stock
+                    <span class="text-[7px] sm:text-[9px] text-red-600 font-medium stock-status">
+                        <i class="fas fa-times-circle text-[5px] sm:text-[6px]"></i> Out of Stock
                     </span>
                     {% endif %}
                 </div>
                 
-                <div class="flex items-center text-[9px] sm:text-[10px] text-amber-500">
-                    ★★★★☆ <span class="text-gray-400 ml-1">({{ product.review_count }})</span>
+                <div class="flex items-center text-[7px] sm:text-[10px] text-amber-500 mt-0.5">
+                    <span class="flex">
+                        {% if product.rating %}
+                            {% for i in range(5) %}
+                                {% if i < product.rating|round(0, 'floor') %}
+                                    <i class="fas fa-star"></i>
+                                {% elif i < product.rating|round(0, 'ceil') and product.rating % 1 >= 0.5 %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for i in range(5) %}
+                                <i class="far fa-star"></i>
+                            {% endfor %}
+                        {% endif %}
+                    </span>
+                    <span class="text-gray-400 ml-0.5 sm:ml-1">({{ product.review_count }})</span>
                 </div>
             </a>
             
             {% if not product.in_stock or product.stock == 0 %}
-            <button onclick="notifyMe('{{ product.name }}')" class="mt-1 text-[10px] text-brand-accent hover:underline flex items-center gap-1">
-                <i class="fas fa-bell"></i> Notify me when available
+            <button onclick="notifyMe('{{ product.name }}')" class="mt-0.5 sm:mt-1 text-[8px] sm:text-[10px] text-brand-accent hover:underline flex items-center gap-0.5 sm:gap-1 touchable">
+                <i class="fas fa-bell text-[6px] sm:text-[8px]"></i> 
+                <span class="hidden xs:inline">Notify me</span>
+                <span class="xs:hidden">Notify</span>
             </button>
             {% endif %}
         </div>
@@ -177,38 +215,38 @@
     </div>
 
     {% if not products %}
-    <div class="text-center py-12">
+    <div class="text-center py-12 sm:py-16">
         {% if search %}
-        <i class="fas fa-search text-6xl text-gray-300 mb-4 block"></i>
-        <p class="text-gray-500 text-lg">No products found for "{{ search }}"</p>
-        <p class="text-gray-400 text-sm mt-2">Try searching with different keywords</p>
+        <i class="fas fa-search text-4xl sm:text-6xl text-gray-300 mb-4 block"></i>
+        <p class="text-gray-500 text-base sm:text-lg">No products found for "{{ search }}"</p>
+        <p class="text-gray-400 text-xs sm:text-sm mt-2">Try searching with different keywords</p>
         {% if search_suggestions and search_suggestions|length > 0 %}
         <div class="mt-4">
-            <p class="text-sm text-gray-500 mb-2">You might like:</p>
+            <p class="text-xs sm:text-sm text-gray-500 mb-2">You might like:</p>
             <div class="flex flex-wrap gap-2 justify-center">
                 {% for suggestion in search_suggestions %}
-                <a href="/shop?search={{ suggestion }}" class="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-brand-accent hover:text-white transition">
+                <a href="/shop?search={{ suggestion }}" class="px-3 py-1 bg-gray-100 rounded-full text-xs sm:text-sm hover:bg-brand-accent hover:text-white transition touchable">
                     {{ suggestion }}
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-        <a href="/shop" class="inline-block mt-4 text-brand-accent hover:underline">View all products</a>
+        <a href="/shop" class="inline-block mt-4 text-brand-accent hover:underline text-sm sm:text-base">View all products</a>
         {% else %}
-        <p class="text-gray-500">No products found in this category.</p>
-        <a href="/shop" class="text-brand-accent hover:underline">View all products</a>
+        <p class="text-gray-500 text-sm sm:text-base">No products found in this category.</p>
+        <a href="/shop" class="text-brand-accent hover:underline text-sm sm:text-base">View all products</a>
         {% endif %}
     </div>
     {% endif %}
 </section>
 
-<!-- Filter Overlay -->
+<!-- ==================== FILTER OVERLAY ==================== -->
 <div id="filterOverlay" class="fixed inset-0 bg-black/40 z-50 hidden opacity-0 transition-opacity duration-300">
     <div id="filterPanel" class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto">
-        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between z-10">
             <div class="flex items-center gap-3">
-                <button id="closeFilter" class="p-2 hover:bg-gray-100 rounded-full transition">
+                <button id="closeFilter" class="p-2 hover:bg-gray-100 rounded-full transition touchable min-h-[44px] min-w-[44px]">
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -216,30 +254,32 @@
                 <h3 class="text-lg font-serif text-brand-dark">Filters</h3>
             </div>
             <div class="flex items-center gap-3">
-                <button id="clearAllFilters" class="text-xs text-gray-500 hover:text-brand-accent transition">
+                <button id="clearAllFilters" class="text-xs text-gray-500 hover:text-brand-accent transition touchable min-h-[44px] min-w-[44px]">
                     Clear All
                 </button>
-                <button id="applyFilters" class="px-4 py-2 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition text-sm font-medium">
+                <button id="applyFilters" class="px-4 py-2 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition text-sm font-medium touchable min-h-[44px]">
                     Apply
                 </button>
             </div>
         </div>
 
-        <div class="p-6 space-y-6">
+        <div class="p-4 sm:p-6 space-y-6">
+            <!-- Category Filter -->
             <div>
                 <h4 class="text-sm font-semibold text-brand-dark mb-3">Category</h4>
                 <div class="space-y-2">
-                    <a href="#" class="filter-category block text-sm {% if not selected_category %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition" data-slug="">
+                    <a href="#" class="filter-category block text-sm {% if not selected_category %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition touchable" data-slug="">
                         All Categories
                     </a>
                     {% for category in categories %}
-                    <a href="#" class="filter-category block text-sm {% if selected_category == category.slug %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition" data-slug="{{ category.slug }}">
+                    <a href="#" class="filter-category block text-sm {% if selected_category == category.slug %}text-brand-dark font-semibold{% else %}text-gray-500{% endif %} hover:text-brand-dark transition touchable" data-slug="{{ category.slug }}">
                         {{ category.name }}
                     </a>
                     {% endfor %}
                 </div>
             </div>
 
+            <!-- Price Range Filter -->
             <div>
                 <h4 class="text-sm font-semibold text-brand-dark mb-3">Price Range</h4>
                 <div class="relative pt-4 pb-6">
@@ -265,7 +305,7 @@
                     <span>₹{{ price_min|round|int }}</span>
                     <span>₹{{ price_max|round|int }}</span>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-2">
                     <div class="flex-1">
                         <label class="text-xs text-gray-500">Min</label>
                         <input type="number" 
@@ -273,7 +313,7 @@
                                value="{{ min_price if min_price is not none else price_min }}"
                                min="{{ price_min }}"
                                max="{{ price_max }}"
-                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c]">
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c] touchable min-h-[44px]">
                     </div>
                     <div class="flex-1">
                         <label class="text-xs text-gray-500">Max</label>
@@ -282,101 +322,47 @@
                                value="{{ max_price if max_price is not none else price_max }}"
                                min="{{ price_min }}"
                                max="{{ price_max }}"
-                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c]">
+                               class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-[#4d502c] focus:border-[#4d502c] touchable min-h-[44px]">
                     </div>
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-2">
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="0" data-max="500">Under ₹500</button>
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="500" data-max="1000">₹500 - ₹1,000</button>
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="1000" data-max="2000">₹1,000 - ₹2,000</button>
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="2000" data-max="5000">₹2,000 - ₹5,000</button>
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="5000" data-max="10000">₹5,000 - ₹10,000</button>
-                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left" data-min="10000" data-max="">Above ₹10,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="0" data-max="500">Under ₹500</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="500" data-max="1000">₹500 - ₹1,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="1000" data-max="2000">₹1,000 - ₹2,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="2000" data-max="5000">₹2,000 - ₹5,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="5000" data-max="10000">₹5,000 - ₹10,000</button>
+                    <button class="price-quick-btn text-xs px-3 py-2 border border-gray-200 rounded-lg hover:border-[#4d502c] hover:bg-[#4d502c]/5 transition text-gray-600 text-left touchable min-h-[44px]" data-min="10000" data-max="">Above ₹10,000</button>
                 </div>
             </div>
 
+            <!-- Availability Filter -->
             <div>
                 <h4 class="text-sm font-semibold text-brand-dark mb-3">Availability</h4>
                 <div class="space-y-2">
-                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer">
-                        <input type="checkbox" id="inStockOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c]">
+                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer touchable">
+                        <input type="checkbox" id="inStockOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c] touchable">
                         <span>In Stock Only</span>
                     </label>
-                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer">
-                        <input type="checkbox" id="onSaleOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c]">
+                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer touchable">
+                        <input type="checkbox" id="onSaleOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c] touchable">
                         <span>On Sale</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-sm text-gray-600 cursor-pointer touchable">
+                        <input type="checkbox" id="freeSizeOnly" class="w-4 h-4 text-[#4d502c] rounded border-gray-300 focus:ring-[#4d502c] touchable">
+                        <span>Free Size Only</span>
                     </label>
                 </div>
             </div>
 
             <div class="pt-4 border-t border-gray-200 sticky bottom-0 bg-white pb-4">
-                <button id="applyFiltersBottom" class="w-full py-3 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition font-medium">
+                <button id="applyFiltersBottom" class="w-full py-3 bg-[#4d502c] text-white rounded-lg hover:bg-[#3d4022] transition font-medium touchable min-h-[48px]">
                     Apply Filters
                 </button>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Footer -->
-<footer class="bg-brand-dark text-gray-400 text-xs py-12 sm:py-16 border-t border-gray-800 mt-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Follow Us Section -->
-        <div class="text-center mb-6">
-            <p class="text-white text-sm font-medium uppercase tracking-wider mb-3">Follow Us</p>
-            <div class="flex justify-center gap-6">
-                <a href="https://www.facebook.com/share/18hECcHyk6/" target="_blank" 
-                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
-                   aria-label="Facebook">
-                    <i class="fab fa-facebook"></i>
-                </a>
-                <a href="https://www.instagram.com/olivintraa?igsh=dTV5YmIwZzhqcW03" target="_blank" 
-                   class="text-gray-400 hover:text-white transition text-2xl hover:scale-110 transform duration-200" 
-                   aria-label="Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div class="md:col-span-4 space-y-3">
-            <h3 class="text-white text-lg font-serif tracking-widest uppercase font-bold">OLIVINTRA</h3>
-            <p class="text-gray-400 max-w-xs leading-relaxed">Timeless fashion for every moment. Beautifully designed ethnic wear tailored with precision and premium craftsmanship.</p>
-        </div>
-        <div class="md:col-span-2 space-y-2">
-            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Shop</h4>
-            <ul class="space-y-1.5">
-                <li><a href="/shop" class="hover:text-white transition">All Products</a></li>
-                <li><a href="/new-arrivals" class="hover:text-white transition">New Arrivals</a></li>
-                <li><a href="/best-sellers" class="hover:text-white transition">Best Sellers</a></li>
-                <li><a href="/my-orders" class="hover:text-white transition">My Orders</a></li>
-            </ul>
-        </div>
-        <div class="md:col-span-3 space-y-2">
-            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Contact</h4>
-            <ul class="space-y-1.5 text-gray-400">
-                <li><span class="font-medium text-gray-300 text-[11px]">942P+WJX Parassala,<br>Kerala, India</span></li>
-                <li><a href="tel:+919037392700" class="hover:text-white transition">+91 90373 92700</a></li>
-                <li><a href="mailto:olivintra@gmail.com" class="hover:text-white transition text-[11px]">olivintra@gmail.com</a></li>
-            </ul>
-        </div>
-        <div class="md:col-span-3 space-y-2">
-            <h4 class="text-white font-semibold uppercase tracking-wider text-xs">Quick Links</h4>
-            <ul class="space-y-1.5">
-                <li><a href="/about" class="hover:text-white transition">About Us</a></li>
-                <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
-                <li><a href="/privacy-policy" class="hover:text-white transition">Privacy Policy</a></li>
-                <li><a href="/terms" class="hover:text-white transition">Terms & Conditions</a></li>
-                <li><a href="/return-policy" class="hover:text-white transition">Return Policy</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800 mt-8 sm:mt-12 pt-6 text-center text-gray-600 text-[10px] sm:text-xs">
-        &copy; 2026 Olivintra. All Rights Reserved.
-    </div>
-</footer>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -401,6 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ==================== FILTER OVERLAY FUNCTIONS ====================
 var filterOverlay = document.getElementById('filterOverlay');
 var filterPanel = document.getElementById('filterPanel');
 var filterToggle = document.getElementById('filterToggle');
@@ -410,14 +397,18 @@ var isFilterOpen = false;
 function openFilter() {
     isFilterOpen = true;
     filterOverlay.classList.remove('hidden');
-    filterOverlay.classList.remove('opacity-0');
-    filterPanel.classList.remove('translate-x-full');
+    // Use requestAnimationFrame for smooth transition
+    requestAnimationFrame(function() {
+        filterOverlay.classList.remove('opacity-0');
+        filterPanel.classList.remove('translate-x-full');
+    });
     document.body.style.overflow = 'hidden';
 }
 
 function closeFilterFunc() {
     isFilterOpen = false;
     filterPanel.classList.add('translate-x-full');
+    filterOverlay.classList.add('opacity-0');
     setTimeout(function() {
         filterOverlay.classList.add('hidden');
         document.body.style.overflow = '';
@@ -426,12 +417,14 @@ function closeFilterFunc() {
 
 filterToggle.addEventListener('click', openFilter);
 closeFilter.addEventListener('click', closeFilterFunc);
+
 filterOverlay.addEventListener('click', function(e) {
     if (e.target === filterOverlay) {
         closeFilterFunc();
     }
 });
 
+// ==================== PRICE RANGE SLIDER ====================
 var filterMinSlider = document.getElementById('filterMinSlider');
 var filterMaxSlider = document.getElementById('filterMaxSlider');
 var filterMinInput = document.getElementById('filterMinInput');
@@ -501,6 +494,7 @@ document.querySelectorAll('.price-quick-btn').forEach(function(btn) {
     });
 });
 
+// ==================== CATEGORY FILTER ====================
 document.querySelectorAll('.filter-category').forEach(function(link) {
     link.addEventListener('click', function(e) {
         e.preventDefault();
@@ -514,19 +508,20 @@ document.querySelectorAll('.filter-category').forEach(function(link) {
     });
 });
 
+// ==================== APPLY FILTERS ====================
 function applyFilters() {
     var currentUrl = new URL(window.location.href);
     var minPrice = filterMinInput.value;
     var maxPrice = filterMaxInput.value;
     var category = window._selectedCategory || '';
     
-    if (minPrice) {
+    if (minPrice && minPrice != minVal) {
         currentUrl.searchParams.set('min_price', minPrice);
     } else {
         currentUrl.searchParams.delete('min_price');
     }
     
-    if (maxPrice) {
+    if (maxPrice && maxPrice != maxVal) {
         currentUrl.searchParams.set('max_price', maxPrice);
     } else {
         currentUrl.searchParams.delete('max_price');
@@ -545,6 +540,13 @@ function applyFilters() {
         currentUrl.searchParams.delete('in_stock');
     }
     
+    var freeSizeOnly = document.getElementById('freeSizeOnly').checked;
+    if (freeSizeOnly) {
+        currentUrl.searchParams.set('free_size', 'true');
+    } else {
+        currentUrl.searchParams.delete('free_size');
+    }
+    
     window.location.href = currentUrl.toString();
 }
 
@@ -555,6 +557,7 @@ document.getElementById('clearAllFilters').addEventListener('click', function() 
     window.location.href = '/shop';
 });
 
+// ==================== NOTIFY ME ====================
 function notifyMe(productName) {
     var message = 'I want to be notified when "' + productName + '" is back in stock.';
     var whatsappUrl = 'https://wa.me/919037392700?text=' + encodeURIComponent(message);
@@ -585,31 +588,153 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('🛍️ Shop page loaded successfully');
+console.log('📱 Mobile responsive design enabled');
 </script>
 
 <style>
+/* ============ MOBILE OPTIMIZATIONS ============ */
+
+/* 1. Force all product images to be exactly the same size */
+.product-card .product-image-wrapper {
+    aspect-ratio: 3/4 !important;
+    overflow: hidden;
+    background-color: #f3f4f6;
+    position: relative;
+}
+
+.product-card .product-image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+}
+
+/* 2. Touch targets for mobile */
+.touchable {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.touchable:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+}
+
+/* 3. Filter overlay smooth transitions */
 #filterPanel {
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 #filterOverlay {
     transition: opacity 0.3s ease;
 }
+
+/* 4. Price quick buttons */
 .price-quick-btn {
-    min-height: 36px;
+    min-height: 44px;
     touch-action: manipulation;
 }
+
+/* 5. Filter toggle */
 #filterToggle {
     touch-action: manipulation;
     min-height: 44px;
 }
+
+/* 6. Responsive filter panel */
 @media (max-width: 640px) {
     #filterPanel {
-        max-width: 100%;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    #filterPanel .p-6 {
+        padding: 16px !important;
     }
     .price-quick-btn {
-        font-size: 11px;
-        padding: 8px 10px;
+        font-size: 11px !important;
+        padding: 8px 10px !important;
+        min-height: 44px !important;
     }
 }
+
+/* 7. Mobile responsive grid */
+@media (max-width: 480px) {
+    .product-grid .grid {
+        gap: 6px !important;
+    }
+    .product-card .product-name {
+        font-size: 8px !important;
+        line-height: 1.2;
+    }
+    .product-card .product-price {
+        font-size: 8px !important;
+    }
+    .product-card .free-size-badge,
+    .product-card .stock-status {
+        font-size: 6px !important;
+    }
+    .product-card .size-tag {
+        font-size: 5px !important;
+        padding: 0px 2px !important;
+    }
+}
+
+/* 8. Extra small screens (xs) */
+@media (min-width: 480px) and (max-width: 640px) {
+    .product-card .product-name {
+        font-size: 9px !important;
+    }
+    .product-card .product-price {
+        font-size: 9px !important;
+    }
+    .product-card .free-size-badge,
+    .product-card .stock-status {
+        font-size: 7px !important;
+    }
+}
+
+/* 9. Better touch feedback on mobile */
+@media (hover: none) {
+    .touchable:active {
+        transform: scale(0.95);
+    }
+    .product-card .product-image-wrapper img {
+        transition: none;
+    }
+    .product-card .product-image-wrapper img:hover {
+        transform: none;
+    }
+}
+
+/* 10. Prevent horizontal scroll */
+.product-grid {
+    overflow: hidden;
+}
+
+/* 11. Badge container fix */
+.product-card .badge-container {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    pointer-events: none;
+}
+
+.product-card .badge-container > * {
+    pointer-events: auto;
+}
+
+/* 12. Smooth image loading */
+.product-card .product-image-wrapper img {
+    background: #f3f4f6;
+}
+
+.product-card .product-image-wrapper img.loaded {
+    opacity: 1;
+}
 </style>
+
 {% endblock %}
