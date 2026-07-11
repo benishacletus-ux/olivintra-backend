@@ -10,9 +10,9 @@
             {% for item in cart_items %}
             <div class="flex gap-4 border-b border-gray-200 py-4" id="cart-item-{{ item.product.id }}-{{ item.size }}">
                 <div class="w-24 h-24 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                    <div class="w-full h-full bg-cover bg-center"
-                         style="background-image: url('{% if item.product.image %}{{ item.product.image }}{% else %}https://via.placeholder.com/100/cccccc/333333?text=Olivintra{% endif %}');">
-                    </div>
+                    <img src="{{ item.product.get_optimized_image(100, 100) }}" 
+                         alt="{{ item.product.name }}"
+                         class="w-full h-full object-cover">
                 </div>
                 <div class="flex-1">
                     <h3 class="font-semibold text-brand-dark">{{ item.product.name }}</h3>
