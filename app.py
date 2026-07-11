@@ -1624,6 +1624,7 @@ def api_product_detail(slug):
         'rating': float(product.rating) if product.rating else 0,
         'review_count': product.review_count or 0,
         'sizes': json.loads(product.sizes) if product.sizes else [],
+        'is_free_size': product.is_free_size,  # <-- ADDED
         'material': product.material,
         'care_instructions': product.care_instructions,
         'is_featured': product.is_featured,
