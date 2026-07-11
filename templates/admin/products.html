@@ -21,7 +21,7 @@
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sizes</th>
+                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sizes / Type</th>
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -48,15 +48,22 @@
                         {% endif %}
                     </td>
                     <td class="px-3 py-4">
-                        {% set sizes = product.get_sizes() %}
-                        {% if sizes %}
-                            <div class="flex flex-wrap gap-1">
-                                {% for size in sizes %}
-                                <span class="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">{{ size }}</span>
-                                {% endfor %}
-                            </div>
+                        <!-- ==================== FREE SIZE / SIZES DISPLAY ==================== -->
+                        {% if product.is_free_size %}
+                            <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                                <i class="fas fa-check-circle mr-1"></i> Free Size
+                            </span>
                         {% else %}
-                            <span class="text-xs text-gray-400">No sizes</span>
+                            {% set sizes = product.get_sizes() %}
+                            {% if sizes %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% for size in sizes %}
+                                    <span class="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">{{ size }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="text-xs text-gray-400">No sizes</span>
+                            {% endif %}
                         {% endif %}
                     </td>
                     <td class="px-3 py-4 whitespace-nowrap">
@@ -74,6 +81,9 @@
                             {% endif %}
                             {% if product.is_new_arrival %}
                             <span class="status-badge bg-blue-100 text-blue-800">New</span>
+                            {% endif %}
+                            {% if product.is_free_size %}
+                            <span class="status-badge bg-green-100 text-green-800">Free Size</span>
                             {% endif %}
                             {% if not product.in_stock %}
                             <span class="status-badge bg-red-100 text-red-800">Out of Stock</span>
