@@ -23,7 +23,23 @@
                 <div class="flex justify-between items-center border-b border-gray-100 pb-3">
                     <div>
                         <p class="font-medium">{{ item.product_name }}</p>
-                        <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
+                        <p class="text-sm text-gray-500">
+                            Qty: {{ item.quantity }}
+                            {% if item.size and item.size != 'N/A' %}
+                                · Size: 
+                                {% if item.size == 'Free Size' %}
+                                    <span class="text-green-600 font-medium">
+                                        <i class="fas fa-check-circle mr-0.5"></i> Free Size
+                                    </span>
+                                {% elif item.size|int and item.size|int >= 20 %}
+                                    <span class="text-[#4d502c] font-medium">
+                                        {{ item.size }}
+                                    </span>
+                                {% else %}
+                                    <span class="font-medium">{{ item.size }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </p>
                     </div>
                     <p class="font-semibold">₹{{ "%.2f"|format(item.price * item.quantity) }}</p>
                 </div>
@@ -86,4 +102,14 @@
         </div>
     </div>
 </div>
+
+<style>
+.status-badge {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+</style>
 {% endblock %}
