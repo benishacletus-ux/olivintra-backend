@@ -113,15 +113,39 @@
         <!-- ==================== SIZES ==================== -->
         <div id="sizeSection">
             <label class="block text-sm font-medium text-gray-700 mb-2">Available Sizes</label>
-            <div class="flex flex-wrap gap-2" id="sizeContainer">
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XS">XS</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="S">S</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="M">M</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="L">L</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XL">XL</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXL">XXL</button>
-                <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXXL">XXXL</button>
+            
+            <!-- Letter Sizes -->
+            <div class="mb-3">
+                <p class="text-xs text-gray-500 mb-1">Letter Sizes</p>
+                <div class="flex flex-wrap gap-2" id="sizeContainer">
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XS">XS</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="S">S</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="M">M</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="L">L</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XL">XL</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXL">XXL</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="XXXL">XXXL</button>
+                </div>
             </div>
+            
+            <!-- Numeric Sizes (Plus Size - Starting from 20) -->
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Plus Sizes</p>
+                <div class="flex flex-wrap gap-2" id="numericSizeContainer">
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="20">20</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="22">22</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="24">24</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="26">26</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="28">28</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="30">30</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="32">32</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="34">34</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="36">36</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="38">38</button>
+                    <button type="button" class="size-btn px-4 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="40">40</button>
+                </div>
+            </div>
+            
             <!-- Hidden input to store selected sizes -->
             <input type="hidden" name="sizes" id="sizesInput" value="">
             <p class="text-xs text-gray-400 mt-2">Click on sizes to select/deselect. Selected sizes will be shown in green.</p>
@@ -262,36 +286,49 @@ document.getElementById('freeSize').addEventListener('change', function() {
 // ==================== SIZE SELECTION ====================
 var selectedSizes = [];
 
-document.querySelectorAll('.size-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        var freeSizeCheckbox = document.getElementById('freeSize');
-        if (freeSizeCheckbox.checked) {
-            alert('Product is marked as Free Size. Please uncheck Free Size to select sizes.');
+// Function to handle size button clicks
+function handleSizeClick(btn) {
+    var freeSizeCheckbox = document.getElementById('freeSize');
+    if (freeSizeCheckbox.checked) {
+        alert('Product is marked as Free Size. Please uncheck Free Size to select sizes.');
+        return;
+    }
+    
+    var size = btn.dataset.size;
+    var index = selectedSizes.indexOf(size);
+    
+    if (index > -1) {
+        // Remove size
+        selectedSizes.splice(index, 1);
+        btn.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+        btn.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+    } else {
+        // Add size
+        if (selectedSizes.length >= 20) {
+            alert('Maximum 20 sizes allowed');
             return;
         }
-        
-        var size = this.dataset.size;
-        var index = selectedSizes.indexOf(size);
-        
-        if (index > -1) {
-            // Remove size
-            selectedSizes.splice(index, 1);
-            this.classList.remove('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
-            this.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
-        } else {
-            // Add size
-            if (selectedSizes.length >= 10) {
-                alert('Maximum 10 sizes allowed');
-                return;
-            }
-            selectedSizes.push(size);
-            this.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
-            this.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
-        }
-        
-        // Update hidden input
-        document.getElementById('sizesInput').value = selectedSizes.join(',');
-        updateSelectedSizesDisplay();
+        selectedSizes.push(size);
+        btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+        btn.classList.add('border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+    }
+    
+    // Update hidden input
+    document.getElementById('sizesInput').value = selectedSizes.join(',');
+    updateSelectedSizesDisplay();
+}
+
+// Letter sizes
+document.querySelectorAll('#sizeContainer .size-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        handleSizeClick(this);
+    });
+});
+
+// Numeric sizes (Plus sizes 20-40)
+document.querySelectorAll('#numericSizeContainer .size-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        handleSizeClick(this);
     });
 });
 
