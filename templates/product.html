@@ -50,7 +50,7 @@
                 {% set all_images = product.get_optimized_images(600, 800) %}
                 {% if all_images|length > 1 %}
                 <span class="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 rounded-full">
-                    <i class="fas fa-images mr-1"></i> 1 / {{ all_images|length }}
+                    
                 </span>
                 {% endif %}
             </div>
