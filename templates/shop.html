@@ -165,11 +165,32 @@
                 </div>
                 {% elif product_sizes %}
                 <div class="flex flex-wrap gap-0.5 mt-0.5">
-                    {% for size in product_sizes[:4] %}
+                    <!-- Separate Letter and Numeric Sizes -->
+                    {% set letter_sizes = [] %}
+                    {% set numeric_sizes = [] %}
+                    {% for size in product_sizes %}
+                        {% if size|string|int and size|string|int > 0 %}
+                            {% set _ = numeric_sizes.append(size) %}
+                        {% else %}
+                            {% set _ = letter_sizes.append(size) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Letter Sizes -->
+                    {% if letter_sizes|length > 0 %}
+                    {% for size in letter_sizes[:3] %}
                     <span class="text-[6px] xs:text-[7px] sm:text-[10px] border border-gray-300 px-0.5 xs:px-1 sm:px-1.5 py-0.5 rounded text-gray-600 size-tag">{{ size }}</span>
                     {% endfor %}
-                    {% if product_sizes|length > 4 %}
-                    <span class="text-[6px] xs:text-[7px] sm:text-[10px] border border-gray-300 px-0.5 xs:px-1 sm:px-1.5 py-0.5 rounded text-gray-600 size-tag">+{{ product_sizes|length - 4 }}</span>
+                    {% if letter_sizes|length > 3 %}
+                    <span class="text-[6px] xs:text-[7px] sm:text-[10px] border border-gray-300 px-0.5 xs:px-1 sm:px-1.5 py-0.5 rounded text-gray-600 size-tag">+{{ letter_sizes|length - 3 }}</span>
+                    {% endif %}
+                    {% endif %}
+                    
+                    <!-- Numeric Sizes (Plus Sizes) -->
+                    {% if numeric_sizes|length > 0 %}
+                    <span class="text-[6px] xs:text-[7px] sm:text-[10px] border border-[#4d502c] px-0.5 xs:px-1 sm:px-1.5 py-0.5 rounded text-[#4d502c] size-tag" style="border-color: #4d502c; background: #4d502c10;">
+                        {{ numeric_sizes|first }}{% if numeric_sizes|length > 1 %}+{% endif %}
+                    </span>
                     {% endif %}
                 </div>
                 {% endif %}
