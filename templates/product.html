@@ -150,13 +150,46 @@
             <!-- Regular Size Selection -->
             <div class="border-t border-gray-200 pt-3 sm:pt-4">
                 <p class="text-sm sm:text-base font-semibold text-brand-dark">Select Size <span class="text-red-500">*</span></p>
-                <div class="flex flex-wrap gap-2 mt-2" id="sizeContainer">
-                    {% for size in sizes %}
-                    <button type="button" class="size-option px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm sm:text-base font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="{{ size }}">
-                        {{ size }}
-                    </button>
-                    {% endfor %}
+                
+                <!-- Separate Letter and Numeric Sizes -->
+                {% set letter_sizes = [] %}
+                {% set numeric_sizes = [] %}
+                {% for size in sizes %}
+                    {% if size|string|int and size|string|int > 0 %}
+                        {% set _ = numeric_sizes.append(size) %}
+                    {% else %}
+                        {% set _ = letter_sizes.append(size) %}
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Letter Sizes -->
+                {% if letter_sizes|length > 0 %}
+                <div class="mt-2">
+                    <p class="text-xs text-gray-500 mb-1">Letter Sizes</p>
+                    <div class="flex flex-wrap gap-2" id="sizeContainer">
+                        {% for size in letter_sizes %}
+                        <button type="button" class="size-option px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm sm:text-base font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="{{ size }}">
+                            {{ size }}
+                        </button>
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endif %}
+                
+                <!-- Numeric Sizes (Plus Sizes) -->
+                {% if numeric_sizes|length > 0 %}
+                <div class="mt-2">
+                    <p class="text-xs text-gray-500 mb-1">Plus Sizes</p>
+                    <div class="flex flex-wrap gap-2" id="numericSizeContainer">
+                        {% for size in numeric_sizes %}
+                        <button type="button" class="size-option px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm sm:text-base font-medium hover:border-[#4d502c] transition touch-manipulation" data-size="{{ size }}">
+                            {{ size }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
                 <input type="hidden" name="selected_size" id="selectedSize" value="">
                 <input type="hidden" name="sizeInput" id="sizeInput" value="">
                 <p class="text-xs sm:text-sm text-red-500 mt-1 hidden" id="sizeError">⚠️ Please select a size before adding to cart</p>
@@ -452,10 +485,29 @@ document.getElementById('reviewMessageModal').addEventListener('click', function
 document.addEventListener('DOMContentLoaded', function () {
     // ==================== SIZE SELECTION ====================
     var selectedSize = '';
-    var sizeOptions = document.querySelectorAll('.size-option');
     var sizeInput = document.getElementById('sizeInput');
     var sizeError = document.getElementById('sizeError');
     var addToCartBtn = document.getElementById('addToCartBtn');
+    
+    // Function to handle size selection
+    function selectSize(btn) {
+        var size = btn.dataset.size;
+        
+        // Deselect all in both containers
+        document.querySelectorAll('.size-option').forEach(function(b) {
+            b.classList.remove('selected', 'border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+            b.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+        });
+        
+        // Select this one
+        btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+        btn.classList.add('selected', 'border-[#4d502c]', 'bg-[#4d502c]', 'text-white');
+        
+        selectedSize = size;
+        sizeInput.value = size;
+        document.getElementById('sizeInputHidden').value = size;
+        sizeError.classList.add('hidden');
+    }
     
     // ============ CHECK IF FREE SIZE ============
     var isFreeSize = document.querySelector('input[name="sizeInput"]');
@@ -466,40 +518,19 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('✅ Free size product - auto-selected');
     }
     
-    if (sizeOptions.length > 0) {
-        sizeOptions.forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var size = this.dataset.size;
-                
-                // Deselect all
-                sizeOptions.forEach(function(b) {
-                    b.classList.remove('selected');
-                    b.classList.remove('border-[#4d502c]');
-                    b.classList.remove('bg-[#4d502c]');
-                    b.classList.remove('text-white');
-                    b.classList.add('border-gray-300');
-                    b.classList.add('bg-white');
-                    b.classList.add('text-gray-700');
-                });
-                
-                // Select this one
-                this.classList.remove('border-gray-300');
-                this.classList.remove('bg-white');
-                this.classList.remove('text-gray-700');
-                this.classList.add('selected');
-                this.classList.add('border-[#4d502c]');
-                this.classList.add('bg-[#4d502c]');
-                this.classList.add('text-white');
-                
-                selectedSize = size;
-                sizeInput.value = size;
-                document.getElementById('sizeInputHidden').value = size;
-                
-                // Hide error if visible
-                sizeError.classList.add('hidden');
-            });
+    // Letter sizes
+    document.querySelectorAll('#sizeContainer .size-option').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            selectSize(this);
         });
-    }
+    });
+    
+    // Numeric sizes (Plus sizes)
+    document.querySelectorAll('#numericSizeContainer .size-option').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            selectSize(this);
+        });
+    });
 
     // ==================== FORM VALIDATION ====================
     var form = document.getElementById('add-to-cart-form');
