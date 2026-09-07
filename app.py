@@ -554,6 +554,8 @@ def admin_logout():
     flash('Logged out successfully', 'success')
     return redirect(url_for('admin_login'))
 
+# ==================== UPDATED ADMIN DASHBOARD - ONLY PAID ORDERS ====================
+
 @app.route('/admin')
 @login_required
 def admin_dashboard():
@@ -561,17 +563,25 @@ def admin_dashboard():
         flash('Access denied. Admin only.', 'error')
         return redirect(url_for('admin_login'))
     
+    # ✅ ONLY COUNT PAID ORDERS FOR REAL BUSINESS
     total_products = Product.query.count()
-    total_orders = Order.query.count()
-    pending_orders = Order.query.filter_by(status='pending').count()
-    confirmed_orders = Order.query.filter_by(status='confirmed').count()
-    shipped_orders = Order.query.filter_by(status='shipped').count()
-    delivered_orders = Order.query.filter_by(status='delivered').count()
-    total_revenue = db.session.query(db.func.sum(Order.total_amount)).filter(Order.status != 'cancelled').scalar() or 0
+    total_orders = Order.query.filter_by(payment_status='paid').count()
+    pending_orders = Order.query.filter_by(payment_status='pending').count()
+    confirmed_orders = Order.query.filter_by(payment_status='paid', status='confirmed').count()
+    shipped_orders = Order.query.filter_by(payment_status='paid', status='shipped').count()
+    delivered_orders = Order.query.filter_by(payment_status='paid', status='delivered').count()
+    
+    # ✅ ONLY REVENUE FROM PAID ORDERS
+    total_revenue = db.session.query(db.func.sum(Order.total_amount)).filter(
+        Order.payment_status == 'paid',
+        Order.status != 'cancelled'
+    ).scalar() or 0
+    
     unread_messages = ContactMessage.query.filter_by(is_read=False).count()
     pending_reviews = Review.query.filter_by(is_approved=False).count()
     
-    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
+    # ✅ ONLY PAID ORDERS IN RECENT LIST
+    recent_orders = Order.query.filter_by(payment_status='paid').order_by(Order.created_at.desc()).limit(10).all()
     recent_messages = ContactMessage.query.order_by(ContactMessage.created_at.desc()).limit(5).all()
     
     return render_template('admin/dashboard.html',
@@ -594,7 +604,8 @@ def admin_dashboard():
 @admin_required
 def admin_notifications_count():
     try:
-        pending_orders = Order.query.filter_by(status='pending').count()
+        # ✅ Only count pending (unpaid) orders
+        pending_orders = Order.query.filter_by(payment_status='pending').count()
         pending_reviews = Review.query.filter_by(is_approved=False).count()
         unread_messages = ContactMessage.query.filter_by(is_read=False).count()
         
@@ -692,19 +703,20 @@ def admin_products_stock_data():
     
     return jsonify({'products': product_data})
 
-# ==================== REAL-TIME ORDER COUNT API ====================
+# ==================== UPDATED REAL-TIME ORDER COUNT API - ONLY PAID ====================
 
 @app.route('/admin/orders/count')
 @login_required
 @admin_required
 def admin_orders_count():
     try:
-        total = Order.query.count()
-        pending = Order.query.filter_by(status='pending').count()
-        confirmed = Order.query.filter_by(status='confirmed').count()
-        shipped = Order.query.filter_by(status='shipped').count()
-        delivered = Order.query.filter_by(status='delivered').count()
-        completed = Order.query.filter_by(status='completed').count()
+        # ✅ Only count paid orders
+        total = Order.query.filter_by(payment_status='paid').count()
+        pending = Order.query.filter_by(payment_status='pending').count()
+        confirmed = Order.query.filter_by(payment_status='paid', status='confirmed').count()
+        shipped = Order.query.filter_by(payment_status='paid', status='shipped').count()
+        delivered = Order.query.filter_by(payment_status='paid', status='delivered').count()
+        completed = Order.query.filter_by(payment_status='paid', status='completed').count()
         
         return jsonify({
             'total': total,
@@ -717,7 +729,7 @@ def admin_orders_count():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== ADMIN DASHBOARD ANALYTICS API ====================
+# ==================== UPDATED ADMIN DASHBOARD ANALYTICS API - ONLY PAID ====================
 
 @app.route('/admin/analytics/data')
 @login_required
@@ -733,52 +745,64 @@ def admin_analytics_data():
         year_start = today.replace(month=1, day=1)
         week_ago = today - timedelta(days=6)
         
+        # ✅ Today's data - only paid orders
         today_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
         ).filter(
             func.date(Order.created_at) == today,
+            Order.payment_status == 'paid',
             Order.status != 'cancelled'
         ).first()
         
+        # ✅ Yesterday's data - only paid orders
         yesterday_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
         ).filter(
             func.date(Order.created_at) == yesterday,
+            Order.payment_status == 'paid',
             Order.status != 'cancelled'
         ).first()
         
+        # ✅ Month's data - only paid orders
         month_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
         ).filter(
             func.date(Order.created_at) >= month_start,
+            Order.payment_status == 'paid',
             Order.status != 'cancelled'
         ).first()
         
+        # ✅ Year's data - only paid orders
         year_data = db.session.query(
             func.sum(Order.total_amount).label('revenue'),
             func.count(Order.id).label('count')
         ).filter(
             func.date(Order.created_at) >= year_start,
+            Order.payment_status == 'paid',
             Order.status != 'cancelled'
         ).first()
         
+        # ✅ Daily orders - only paid
         daily_orders = db.session.query(
             func.date(Order.created_at).label('date'),
             func.count(Order.id).label('count')
         ).filter(
-            func.date(Order.created_at) >= week_ago
+            func.date(Order.created_at) >= week_ago,
+            Order.payment_status == 'paid'
         ).group_by(
             func.date(Order.created_at)
         ).all()
         
+        # ✅ Daily revenue - only paid
         daily_revenue = db.session.query(
             func.date(Order.created_at).label('date'),
             func.sum(Order.total_amount).label('total')
         ).filter(
             func.date(Order.created_at) >= week_ago,
+            Order.payment_status == 'paid',
             Order.status != 'cancelled'
         ).group_by(
             func.date(Order.created_at)
@@ -807,12 +831,16 @@ def admin_analytics_data():
                     break
             revenue.append(revenue_amount)
         
-        total_orders = Order.query.count()
-        pending_orders = Order.query.filter_by(status='pending').count()
-        confirmed_orders = Order.query.filter_by(status='confirmed').count()
-        shipped_orders = Order.query.filter_by(status='shipped').count()
-        delivered_orders = Order.query.filter_by(status='delivered').count()
-        total_revenue = db.session.query(func.sum(Order.total_amount)).filter(Order.status != 'cancelled').scalar() or 0
+        # ✅ Total counts - only paid
+        total_orders = Order.query.filter_by(payment_status='paid').count()
+        pending_orders = Order.query.filter_by(payment_status='pending').count()
+        confirmed_orders = Order.query.filter_by(payment_status='paid', status='confirmed').count()
+        shipped_orders = Order.query.filter_by(payment_status='paid', status='shipped').count()
+        delivered_orders = Order.query.filter_by(payment_status='paid', status='delivered').count()
+        total_revenue = db.session.query(func.sum(Order.total_amount)).filter(
+            Order.payment_status == 'paid',
+            Order.status != 'cancelled'
+        ).scalar() or 0
         
         return jsonify({
             'today_revenue': float(today_data.revenue or 0) if today_data else 0,
@@ -837,14 +865,15 @@ def admin_analytics_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ==================== ADMIN RECENT ORDERS & MESSAGES API ====================
+# ==================== UPDATED ADMIN RECENT ORDERS API - ONLY PAID ====================
 
 @app.route('/admin/recent-orders')
 @login_required
 @admin_required
 def admin_recent_orders():
     try:
-        orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
+        # ✅ Only paid orders
+        orders = Order.query.filter_by(payment_status='paid').order_by(Order.created_at.desc()).limit(10).all()
         order_data = [{
             'id': o.id,
             'order_number': o.order_number,
@@ -1276,16 +1305,24 @@ def admin_delete_product(id):
         flash('Error deleting product: ' + str(e), 'error')
         return redirect(url_for('admin_products'))
 
+# ==================== UPDATED ADMIN ORDERS - ONLY PAID ====================
+
 @app.route('/admin/orders')
 @login_required
 @admin_required
 def admin_orders():
     status = request.args.get('status')
-    query = Order.query
+    show_all = request.args.get('show_all') == 'true'  # Optional: allow viewing all orders
+    
+    if show_all:
+        query = Order.query  # Show all orders (including pending/unpaid)
+    else:
+        query = Order.query.filter_by(payment_status='paid')  # Show only paid orders
+    
     if status:
         query = query.filter_by(status=status)
     orders = query.order_by(Order.created_at.desc()).all()
-    return render_template('admin/orders.html', orders=orders)
+    return render_template('admin/orders.html', orders=orders, show_all=show_all)
 
 @app.route('/admin/order/<int:id>')
 @login_required
@@ -1976,6 +2013,10 @@ if __name__ == '__main__':
     print("   /api/my-orders")
     print("   /api/submit-review")
     print("   /api/contact")
+    print("=" * 50)
+    print("✅ Updated: Admin panel now shows ONLY PAID ORDERS")
+    print("📊 Revenue calculated only from successful payments")
+    print("📦 Unpaid/failed orders excluded from all statistics")
     print("=" * 50)
     print("Press CTRL+C to stop")
     print("=" * 50)

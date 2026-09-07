@@ -9,8 +9,11 @@
         <p class="text-gray-500 text-sm">Manage customer orders</p>
     </div>
     <div class="flex flex-wrap gap-2">
-        <a href="/admin/orders" class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition {% if not request.args.get('status') %}bg-brand-dark text-white border-brand-dark hover:bg-brand-accent{% endif %}">
-            All
+        <a href="/admin/orders" class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition {% if not request.args.get('status') and not request.args.get('show_all') %}bg-brand-dark text-white border-brand-dark hover:bg-brand-accent{% endif %}">
+            Paid Orders
+        </a>
+        <a href="/admin/orders?show_all=true" class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition {% if request.args.get('show_all') == 'true' %}bg-yellow-500 text-white border-yellow-500{% endif %}">
+            <i class="fas fa-eye mr-1"></i> All Orders
         </a>
         <a href="/admin/orders?status=pending" class="px-4 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 transition {% if request.args.get('status') == 'pending' %}bg-yellow-500 text-white border-yellow-500{% endif %}">
             Pending
@@ -26,6 +29,45 @@
         </a>
     </div>
 </div>
+
+<!-- Warning when viewing all orders -->
+{% if request.args.get('show_all') == 'true' %}
+<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded-r-lg">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-yellow-800 font-medium">
+                ⚠️ Showing ALL orders including unpaid/pending payments
+            </p>
+            <p class="text-xs text-yellow-700 mt-1">
+                Only <strong>paid orders</strong> are counted in revenue and statistics. 
+                <a href="/admin/orders" class="font-semibold underline hover:text-yellow-900">View paid orders only →</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Info note for paid orders view -->
+{% if not request.args.get('show_all') %}
+<div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-lg">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-green-800">
+                ✅ Showing <strong>paid orders only</strong>
+            </p>
+            <p class="text-xs text-green-700 mt-1">
+                <a href="/admin/orders?show_all=true" class="font-semibold underline hover:text-green-900">View all orders (including unpaid) →</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="overflow-x-auto">
@@ -43,9 +85,12 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for order in orders %}
-                <tr class="hover:bg-gray-50 transition">
+                <tr class="hover:bg-gray-50 transition {% if order.payment_status != 'paid' %}bg-yellow-50{% endif %}">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="text-sm font-medium">#{{ order.order_number }}</span>
+                        {% if order.payment_status != 'paid' %}
+                        <span class="ml-2 text-[10px] bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full font-semibold">UNPAID</span>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-medium">{{ order.customer_name }}</div>
@@ -53,20 +98,30 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">₹{{ "%.2f"|format(order.total_amount) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif order.status == 'shipped' %}bg-purple-100 text-purple-800{% elif order.status == 'delivered' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                            {{ order.status }}
+                        <span class="status-badge {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif order.status == 'shipped' %}bg-purple-100 text-purple-800{% elif order.status == 'delivered' %}bg-green-100 text-green-800{% elif order.status == 'completed' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ order.status|title }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="status-badge {% if order.payment_status == 'paid' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                            {{ order.payment_status }}
-                        </span>
+                        {% if order.payment_status == 'paid' %}
+                            <span class="status-badge bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle text-green-600 mr-1"></i> Paid
+                            </span>
+                        {% else %}
+                            <span class="status-badge bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock text-yellow-600 mr-1"></i> Pending
+                            </span>
+                        {% endif %}
+                        {% if order.razorpay_payment_id %}
+                            <span class="text-[10px] text-gray-400 block mt-0.5">ID: {{ order.razorpay_payment_id[:8] }}...</span>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ order.created_at.strftime('%d %b %Y') }}
+                        <span class="text-[10px] text-gray-400 block">{{ order.created_at.strftime('%I:%M %p') }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a href="/admin/order/{{ order.id }}" class="text-brand-accent hover:bg-brand-accent/10 p-2 rounded-lg transition inline-block">
+                        <a href="/admin/order/{{ order.id }}" class="text-brand-accent hover:bg-brand-accent/10 p-2 rounded-lg transition inline-block" title="View Order Details">
                             <i class="fas fa-eye"></i>
                         </a>
                     </td>
@@ -76,12 +131,48 @@
                     <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-shopping-bag text-4xl text-gray-300 mb-4 block"></i>
                         <p class="text-lg font-medium">No orders found</p>
-                        <p class="text-sm mt-1">Orders will appear here once customers make purchases</p>
+                        <p class="text-sm mt-1">
+                            {% if request.args.get('show_all') %}
+                                No orders have been placed yet
+                            {% else %}
+                                No paid orders found. <a href="/admin/orders?show_all=true" class="text-brand-accent hover:underline">View all orders →</a>
+                            {% endif %}
+                        </p>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    
+    <!-- Footer with order count -->
+    <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+        <span class="text-xs text-gray-500">
+            <i class="fas fa-info-circle mr-1"></i>
+            {% if request.args.get('show_all') %}
+                Showing <strong>all</strong> orders (including unpaid)
+            {% else %}
+                Showing <strong>paid</strong> orders only
+            {% endif %}
+        </span>
+        <span class="text-xs text-gray-400">
+            Total: <strong class="text-brand-dark">{{ orders|length }}</strong> orders
+        </span>
+    </div>
 </div>
+
+<style>
+.status-badge {
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+    white-space: nowrap;
+}
+.text-brand-dark { color: #1a1a1a; }
+.text-brand-accent { color: #8c6239; }
+.hover\:text-brand-accent:hover { color: #8c6239; }
+.bg-brand-accent\/10 { background: rgba(140, 98, 57, 0.1); }
+</style>
 {% endblock %}

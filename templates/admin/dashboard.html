@@ -32,7 +32,9 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-400">
-            <span id="totalOrdersText">0 orders</span>
+            <span id="totalOrdersText">0 paid orders</span>
+            <span class="text-gray-300 ml-2">|</span>
+            <span class="text-green-600">✅ Paid only</span>
         </div>
     </div>
     
@@ -47,22 +49,23 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-400">
-            <span id="orderGrowth">0%</span> vs last month
+            <span class="text-green-600">✅ Paid orders only</span>
         </div>
     </div>
     
-    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <!-- Pending Payments Card - NEW -->
+    <div class="admin-card bg-white p-6 rounded-xl shadow-sm border border-yellow-200 bg-yellow-50">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold">Pending Orders</p>
-                <p class="text-2xl font-bold text-orange-500 mt-1" id="pendingOrders">0</p>
+                <p class="text-gray-600 text-xs uppercase tracking-wider font-semibold">Pending Payments</p>
+                <p class="text-2xl font-bold text-yellow-600 mt-1" id="pendingOrders">0</p>
             </div>
-            <div class="bg-orange-100 p-3 rounded-lg">
-                <i class="fas fa-clock text-orange-600 text-xl"></i>
+            <div class="bg-yellow-200 p-3 rounded-lg">
+                <i class="fas fa-clock text-yellow-700 text-xl"></i>
             </div>
         </div>
-        <div class="mt-2 text-xs text-gray-400">
-            <span id="pendingStatus">All orders processed</span>
+        <div class="mt-2 text-xs text-gray-500">
+            <span id="pendingStatus">⏳ Unpaid orders</span>
         </div>
     </div>
     
@@ -95,7 +98,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="todayOrders">0 orders</span> today
+            <span id="todayOrders">0 paid orders</span> today
         </div>
     </div>
 
@@ -110,7 +113,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="yesterdayOrders">0 orders</span> yesterday
+            <span id="yesterdayOrders">0 paid orders</span> yesterday
         </div>
     </div>
 
@@ -125,7 +128,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="monthOrders">0 orders</span> this month
+            <span id="monthOrders">0 paid orders</span> this month
         </div>
     </div>
 
@@ -140,7 +143,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="yearOrders">0 orders</span> this year
+            <span id="yearOrders">0 paid orders</span> this year
         </div>
     </div>
 </div>
@@ -150,7 +153,7 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Orders</h3>
-            <span class="text-xs text-gray-400">Last 7 days</span>
+            <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
         </div>
         <div style="height: 250px;">
             <canvas id="ordersChart"></canvas>
@@ -159,7 +162,7 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Revenue</h3>
-            <span class="text-xs text-gray-400">Last 7 days</span>
+            <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
         </div>
         <div style="height: 250px;">
             <canvas id="revenueChart"></canvas>
@@ -227,13 +230,19 @@
                 <span class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardPendingReviews">0</span>
             </div>
             <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-                <span class="text-sm text-gray-600">Pending Orders</span>
+                <span class="text-sm text-gray-600">Pending Payments</span>
                 <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardPendingOrders">0</span>
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Total Revenue</span>
                 <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-semibold" id="dashboardTotalRevenue">₹0.00</span>
             </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-200">
+            <p class="text-[10px] text-gray-400">
+                <i class="fas fa-info-circle"></i> 
+                Revenue from <strong>paid orders only</strong>
+            </p>
         </div>
     </div>
 </div>
@@ -280,8 +289,6 @@
     </a>
 </div>
 
-
-
 <!-- Order Status Summary -->
 <div class="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
     <div class="flex justify-between items-center mb-4">
@@ -292,6 +299,7 @@
         <div class="text-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
             <p class="text-sm text-gray-500">Total</p>
             <p class="text-xl font-bold text-brand-dark" id="summaryTotal">0</p>
+            <p class="text-[10px] text-green-600">✅ Paid</p>
         </div>
         <div class="text-center p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition">
             <p class="text-sm text-yellow-600">Pending</p>
@@ -309,6 +317,13 @@
             <p class="text-sm text-green-600">Delivered</p>
             <p class="text-xl font-bold text-green-600" id="summaryDelivered">0</p>
         </div>
+    </div>
+    <div class="mt-3 text-center">
+        <p class="text-[10px] text-gray-400">
+            <i class="fas fa-info-circle"></i> 
+            All counts show <strong>paid orders only</strong>. Unpaid orders are excluded.
+            <a href="/admin/orders?show_all=true" class="text-brand-accent hover:underline ml-1">View all orders →</a>
+        </p>
     </div>
 </div>
 
@@ -345,7 +360,6 @@ function fetchRecentOrders() {
             return response.json();
         })
         .then(function(data) {
-            // If data is an array, return it; if it has an error property, throw
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -386,30 +400,34 @@ function updateDashboard(data) {
     document.getElementById('monthRevenue').textContent = '₹' + (data.month_revenue || 0).toFixed(2);
     document.getElementById('yearRevenue').textContent = '₹' + (data.year_revenue || 0).toFixed(2);
     
-    document.getElementById('todayOrders').textContent = (data.today_orders || 0) + ' orders';
-    document.getElementById('yesterdayOrders').textContent = (data.yesterday_orders || 0) + ' orders';
-    document.getElementById('monthOrders').textContent = (data.month_orders || 0) + ' orders';
-    document.getElementById('yearOrders').textContent = (data.year_orders || 0) + ' orders';
+    document.getElementById('todayOrders').textContent = (data.today_orders || 0) + ' paid orders';
+    document.getElementById('yesterdayOrders').textContent = (data.yesterday_orders || 0) + ' paid orders';
+    document.getElementById('monthOrders').textContent = (data.month_orders || 0) + ' paid orders';
+    document.getElementById('yearOrders').textContent = (data.year_orders || 0) + ' paid orders';
     
     // Update main stats
     document.getElementById('totalRevenue').textContent = '₹' + (data.total_revenue || 0).toFixed(2);
     document.getElementById('totalOrders').textContent = data.total_orders || 0;
-    document.getElementById('totalOrdersText').textContent = (data.total_orders || 0) + ' orders';
+    document.getElementById('totalOrdersText').textContent = (data.total_orders || 0) + ' paid orders';
+    
+    // Pending Orders (Unpaid - for the yellow card)
     document.getElementById('pendingOrders').textContent = data.pending_orders || 0;
     
     // Update pending status
     var pendingStatus = document.getElementById('pendingStatus');
     if (data.pending_orders > 0) {
-        pendingStatus.innerHTML = '<span class="text-orange-500">⚠️ ' + data.pending_orders + ' orders need processing</span>';
+        pendingStatus.innerHTML = '<span class="text-orange-500">⚠️ ' + data.pending_orders + ' unpaid orders need attention</span>';
     } else {
-        pendingStatus.innerHTML = '<span class="text-green-600">✅ All orders processed</span>';
+        pendingStatus.innerHTML = '<span class="text-green-600">✅ No pending payments</span>';
     }
     
     // Update order growth
     var growth = data.order_growth || 0;
     var growthEl = document.getElementById('orderGrowth');
-    growthEl.textContent = (growth > 0 ? '+' : '') + growth.toFixed(1) + '%';
-    growthEl.style.color = growth >= 0 ? '#16a34a' : '#dc2626';
+    if (growthEl) {
+        growthEl.textContent = (growth > 0 ? '+' : '') + growth.toFixed(1) + '%';
+        growthEl.style.color = growth >= 0 ? '#16a34a' : '#dc2626';
+    }
     
     // Update distribution
     document.getElementById('distPending').textContent = data.pending_orders || 0;
@@ -440,7 +458,7 @@ function updateDashboard(data) {
     // Update quick order status
     var quickStatus = document.getElementById('quickOrderStatus');
     if (data.pending_orders > 0) {
-        quickStatus.innerHTML = '<span class="text-orange-500">' + data.pending_orders + ' pending</span>';
+        quickStatus.innerHTML = '<span class="text-orange-500">⚠️ ' + data.pending_orders + ' pending</span>';
     } else {
         quickStatus.textContent = 'All orders processed';
     }
@@ -457,13 +475,12 @@ function updateDashboard(data) {
 function updateRecentOrders(orders) {
     var container = document.getElementById('recentOrdersContainer');
     
-    // Check if orders is an array and has items
     if (!orders || !Array.isArray(orders) || orders.length === 0) {
         container.innerHTML = `
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
-                <p class="text-sm">No orders yet</p>
-                <p class="text-xs text-gray-400">Orders will appear here when customers place them</p>
+                <p class="text-sm">No paid orders yet</p>
+                <p class="text-xs text-gray-400">Paid orders will appear here when customers complete payment</p>
             </div>
         `;
         return;
@@ -507,6 +524,7 @@ function updateRecentOrders(orders) {
                         ${statusText}
                     </span>
                     <p class="text-xs text-gray-400 mt-1">${formattedDate}</p>
+                    <p class="text-[10px] text-green-600">✅ Paid</p>
                 </div>
             </div>
         `;
@@ -574,14 +592,12 @@ function updateCharts(data) {
     var orders = data.orders || [0, 0, 0, 0, 0, 0, 0];
     var revenue = data.revenue || [0, 0, 0, 0, 0, 0, 0];
     
-    // Update Orders Chart
     if (ordersChartInstance) {
         ordersChartInstance.data.labels = days;
         ordersChartInstance.data.datasets[0].data = orders;
         ordersChartInstance.update('none');
     }
     
-    // Update Revenue Chart
     if (revenueChartInstance) {
         revenueChartInstance.data.labels = days;
         revenueChartInstance.data.datasets[0].data = revenue;
@@ -594,14 +610,13 @@ function initCharts() {
     var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     var defaultData = [0, 0, 0, 0, 0, 0, 0];
     
-    // Orders Chart
     var ordersCtx = document.getElementById('ordersChart').getContext('2d');
     ordersChartInstance = new Chart(ordersCtx, {
         type: 'bar',
         data: {
             labels: days,
             datasets: [{
-                label: 'Orders',
+                label: 'Orders (Paid)',
                 data: defaultData,
                 backgroundColor: 'rgba(77, 80, 44, 0.7)',
                 borderColor: '#4d502c',
@@ -633,14 +648,13 @@ function initCharts() {
         }
     });
     
-    // Revenue Chart
     var revenueCtx = document.getElementById('revenueChart').getContext('2d');
     revenueChartInstance = new Chart(revenueCtx, {
         type: 'line',
         data: {
             labels: days,
             datasets: [{
-                label: 'Revenue (₹)',
+                label: 'Revenue (₹) - Paid',
                 data: defaultData,
                 backgroundColor: 'rgba(140, 98, 57, 0.1)',
                 borderColor: '#8c6239',
@@ -686,7 +700,7 @@ function initCharts() {
 // ==================== REFRESH ANALYTICS ====================
 function refreshAnalytics() {
     var icon = document.getElementById('refreshIcon');
-    icon.classList.add('fa-spin');
+    if (icon) icon.classList.add('fa-spin');
     
     Promise.all([
         fetchAnalyticsData(),
@@ -702,11 +716,11 @@ function refreshAnalytics() {
         if (ordersData) updateRecentOrders(ordersData);
         if (messagesData) updateRecentMessages(messagesData);
         
-        icon.classList.remove('fa-spin');
+        if (icon) icon.classList.remove('fa-spin');
         showToast('✅ Dashboard updated successfully!');
     })
     .catch(function() {
-        icon.classList.remove('fa-spin');
+        if (icon) icon.classList.remove('fa-spin');
         showToast('❌ Error refreshing dashboard', 'error');
     });
 }
@@ -744,10 +758,8 @@ function pulseLiveIndicator() {
 
 // ==================== AUTO-REFRESH ====================
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts
     initCharts();
     
-    // Load initial data
     Promise.all([
         fetchAnalyticsData(),
         fetchRecentOrders(),
@@ -767,7 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(function(error) {
         console.error('Error loading initial data:', error);
-        // Show error in containers
         document.getElementById('recentOrdersContainer').innerHTML = `
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-exclamation-circle text-4xl text-red-300 mb-3 block"></i>
@@ -784,7 +795,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     });
     
-    // Auto-refresh every 15 seconds
     refreshInterval = setInterval(function() {
         Promise.all([
             fetchAnalyticsData(),
@@ -806,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 15000);
 });
 
-console.log('📊 Real-time Admin Dashboard loaded successfully');
+console.log('📊 Real-time Admin Dashboard loaded - Showing PAID orders only');
 </script>
 
 <style>
@@ -823,18 +833,15 @@ console.log('📊 Real-time Admin Dashboard loaded successfully');
 .bg-brand-accent\/10 { background: rgba(140, 98, 57, 0.1); }
 .bg-brand-accent\/20 { background: rgba(140, 98, 57, 0.2); }
 
-/* Progress bar animations */
 .bg-yellow-500, .bg-blue-500, .bg-purple-500, .bg-green-500 {
     transition: width 0.8s ease-in-out;
 }
 
-/* Chart container */
 canvas {
     max-height: 100%;
     max-width: 100%;
 }
 
-/* Admin card hover effects */
 .admin-card {
     transition: all 0.3s ease;
 }
@@ -843,13 +850,11 @@ canvas {
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
-/* Quick Stats hover effects */
 .bg-gray-50:hover, .bg-yellow-50:hover, .bg-blue-50:hover, .bg-purple-50:hover, .bg-green-50:hover {
     transform: scale(1.02);
     transition: all 0.2s ease;
 }
 
-/* Toast notification */
 .toast-notification {
     animation: slideIn 0.3s ease;
 }
@@ -864,7 +869,6 @@ canvas {
     }
 }
 
-/* Live indicator pulse */
 .animate-pulse {
     animation: pulse 1.5s ease-in-out infinite;
 }
@@ -873,7 +877,6 @@ canvas {
     50% { opacity: 0.3; }
 }
 
-/* Scrollable containers */
 #recentOrdersContainer, #recentMessagesContainer {
     scrollbar-width: thin;
     scrollbar-color: #c5a880 #f1ede8;

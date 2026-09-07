@@ -13,6 +13,48 @@
     </a>
 </div>
 
+<!-- ⚠️ WARNING: Unpaid Order Alert -->
+{% if order.payment_status != 'paid' %}
+<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-red-800 font-bold">
+                ⚠️ WARNING: This order has NOT been paid yet!
+            </p>
+            <p class="text-sm text-red-700 mt-1">
+                <strong>DO NOT dispatch or ship this order</strong> until payment is confirmed.
+                <br>
+                <span class="text-xs">Payment Status: <strong>PENDING</strong> | Payment Method: {{ order.payment_method }}</span>
+            </p>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- ✅ Success: Paid Order -->
+<div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-lg">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-green-800 font-bold">
+                ✅ Payment Confirmed
+            </p>
+            <p class="text-sm text-green-700 mt-1">
+                This order has been successfully paid. You can process and ship this order.
+                {% if order.razorpay_payment_id %}
+                <br>
+                <span class="text-xs">Payment ID: <strong>{{ order.razorpay_payment_id }}</strong></span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-6">
         <!-- Order Items -->
@@ -77,6 +119,52 @@
             </div>
         </div>
 
+        <!-- Payment Information Card -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="font-semibold text-brand-dark text-lg mb-4">
+                <i class="fas fa-credit-card mr-2 text-brand-accent"></i> Payment Information
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-600">Payment Method</span>
+                    <span class="text-sm font-medium">{{ order.payment_method }}</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-600">Payment Status</span>
+                    <span>
+                        {% if order.payment_status == 'paid' %}
+                            <span class="status-badge bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle text-green-600 mr-1"></i> ✅ Paid
+                            </span>
+                        {% else %}
+                            <span class="status-badge bg-red-100 text-red-800">
+                                <i class="fas fa-clock text-red-600 mr-1"></i> ⏳ Pending
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if order.razorpay_payment_id %}
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-600">Payment ID</span>
+                    <span class="text-sm font-mono text-gray-700">{{ order.razorpay_payment_id }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-600">Order Status</span>
+                    <span class="text-sm font-medium">
+                        <span class="status-badge {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif order.status == 'shipped' %}bg-purple-100 text-purple-800{% elif order.status == 'delivered' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ order.status|title }}
+                        </span>
+                    </span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Total Amount</span>
+                    <span class="text-sm font-bold text-brand-dark">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Status Card -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h3 class="font-semibold text-brand-dark text-lg mb-4">Update Status</h3>
             <form method="POST" action="/admin/order/update-status/{{ order.id }}">
@@ -87,16 +175,26 @@
                     <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
                     <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
                 </select>
-                <button type="submit" class="w-full bg-brand-dark text-white py-2.5 rounded-lg hover:bg-brand-accent transition font-medium">
+                
+                <!-- Disable update button for unpaid orders -->
+                <button type="submit" 
+                        class="w-full py-2.5 rounded-lg transition font-medium {% if order.payment_status != 'paid' %}bg-gray-400 cursor-not-allowed{% else %}bg-brand-dark hover:bg-brand-accent text-white{% endif %}"
+                        {% if order.payment_status != 'paid' %}disabled{% endif %}>
                     <i class="fas fa-sync mr-2"></i> Update Status
                 </button>
+                
+                {% if order.payment_status != 'paid' %}
+                <p class="text-xs text-red-500 mt-2 text-center">
+                    <i class="fas fa-exclamation-circle mr-1"></i> 
+                    Cannot update status. Payment is pending.
+                </p>
+                {% endif %}
             </form>
-            <div class="mt-4 pt-4 border-t border-gray-200 text-sm">
-                <p><span class="font-medium">Payment Method:</span> {{ order.payment_method }}</p>
-                <p><span class="font-medium">Payment Status:</span> 
-                    <span class="status-badge {% if order.payment_status == 'paid' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                        {{ order.payment_status }}
-                    </span>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200 text-xs text-gray-400">
+                <p>
+                    <i class="fas fa-info-circle mr-1"></i> 
+                    Status can only be updated for <strong>paid</strong> orders.
                 </p>
             </div>
         </div>
@@ -105,11 +203,20 @@
 
 <style>
 .status-badge {
-    padding: 2px 10px;
+    padding: 4px 14px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
     display: inline-block;
+    white-space: nowrap;
+}
+.text-brand-dark { color: #1a1a1a; }
+.text-brand-accent { color: #8c6239; }
+.hover\:text-brand-accent:hover { color: #8c6239; }
+
+/* Disabled button style */
+.cursor-not-allowed {
+    cursor: not-allowed;
 }
 </style>
 {% endblock %}

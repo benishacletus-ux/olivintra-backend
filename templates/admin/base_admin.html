@@ -112,6 +112,10 @@
             color: #ffffff;
             animation: pulse-badge 1.5s ease-in-out infinite;
         }
+        .sidebar-link .badge.success {
+            background: #22c55e;
+            color: #ffffff;
+        }
         
         @keyframes pulse-badge {
             0%, 100% { transform: scale(1); }
@@ -635,7 +639,7 @@
             <a href="/admin/orders" class="menu-link {% if '/orders' in request.path %}active{% endif %}" onclick="closeSlideMenu()">
                 <i class="fas fa-shopping-cart"></i> Orders
                 {% set pending_count = pending_orders|default(0) %}
-                <span class="badge {% if pending_count > 0 %}" style="background:#ef4444; color:#ffffff;{% else %}" style="background:rgba(255,255,255,0.08); color:#9ca3af;{% endif %}">
+                <span class="badge {% if pending_count > 0 %}" style="background:#f59e0b; color:#ffffff;{% else %}" style="background:rgba(255,255,255,0.08); color:#9ca3af;{% endif %}">
                     {{ pending_count }}
                 </span>
             </a>
@@ -695,7 +699,7 @@
                 <a href="/admin/orders" class="sidebar-link {% if '/orders' in request.path %}active{% endif %}">
                     <i class="fas fa-shopping-cart"></i> Orders
                     {% set pending_count = pending_orders|default(0) %}
-                    <span class="badge {% if pending_count > 0 %}alert{% endif %}">{{ pending_count }}</span>
+                    <span class="badge {% if pending_count > 0 %}warning{% endif %}">{{ pending_count }}</span>
                 </a>
                 <a href="/admin/categories" class="sidebar-link {% if '/categories' in request.path %}active{% endif %}">
                     <i class="fas fa-tags"></i> Categories
@@ -839,28 +843,31 @@
                     return response.json();
                 })
                 .then(function(data) {
+                    // Update Orders badge (shows pending/unpaid orders)
                     var pendingCount = data.pending_orders || 0;
                     document.querySelectorAll('.sidebar-link .badge, .menu-link .badge').forEach(function(badge) {
-                        var parent = badge.closest('a');
-                        if (parent && parent.textContent.includes('Orders')) {
+                        var parent = badge.closest('a') || badge.closest('.menu-link') || badge.closest('.sidebar-link');
+                        if (parent && parent.textContent && parent.textContent.includes('Orders')) {
                             badge.textContent = pendingCount;
-                            badge.className = 'badge' + (pendingCount > 0 ? ' alert' : '');
+                            badge.className = 'badge' + (pendingCount > 0 ? ' warning' : '');
                         }
                     });
                     
+                    // Update Reviews badge
                     var reviewCount = data.pending_reviews || 0;
                     document.querySelectorAll('.sidebar-link .badge, .menu-link .badge').forEach(function(badge) {
-                        var parent = badge.closest('a');
-                        if (parent && parent.textContent.includes('Reviews')) {
+                        var parent = badge.closest('a') || badge.closest('.menu-link') || badge.closest('.sidebar-link');
+                        if (parent && parent.textContent && parent.textContent.includes('Reviews')) {
                             badge.textContent = reviewCount;
                             badge.className = 'badge' + (reviewCount > 0 ? ' warning' : '');
                         }
                     });
                     
+                    // Update Messages badge
                     var msgCount = data.unread_messages || 0;
                     document.querySelectorAll('.sidebar-link .badge, .menu-link .badge').forEach(function(badge) {
-                        var parent = badge.closest('a');
-                        if (parent && parent.textContent.includes('Messages')) {
+                        var parent = badge.closest('a') || badge.closest('.menu-link') || badge.closest('.sidebar-link');
+                        if (parent && parent.textContent && parent.textContent.includes('Messages')) {
                             badge.textContent = msgCount;
                             badge.className = 'badge' + (msgCount > 0 ? ' info' : '');
                         }
@@ -877,7 +884,8 @@
         setInterval(updateBadges, 30000);
         setTimeout(updateBadges, 2000);
 
-        console.log('✨ Admin panel loaded - Elegant mobile design');
+        console.log('✨ Admin panel loaded - Showing PAID orders only in statistics');
+        console.log('📊 Unpaid orders shown as "Pending Payments" in dashboard');
     </script>
     {% block extra_js %}{% endblock %}
 </body>
