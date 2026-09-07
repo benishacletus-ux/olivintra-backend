@@ -638,9 +638,9 @@
             </a>
             <a href="/admin/orders" class="menu-link {% if '/orders' in request.path %}active{% endif %}" onclick="closeSlideMenu()">
                 <i class="fas fa-shopping-cart"></i> Orders
-                {% set pending_count = pending_orders|default(0) %}
-                <span class="badge {% if pending_count > 0 %}" style="background:#f59e0b; color:#ffffff;{% else %}" style="background:rgba(255,255,255,0.08); color:#9ca3af;{% endif %}">
-                    {{ pending_count }}
+                {% set paid_count = total_orders|default(0) %}
+                <span class="badge {% if paid_count > 0 %}" style="background:#22c55e; color:#ffffff;{% else %}" style="background:rgba(255,255,255,0.08); color:#9ca3af;{% endif %}">
+                    {{ paid_count }}
                 </span>
             </a>
             <a href="/admin/categories" class="menu-link {% if '/categories' in request.path %}active{% endif %}" onclick="closeSlideMenu()">
@@ -698,8 +698,8 @@
                 </a>
                 <a href="/admin/orders" class="sidebar-link {% if '/orders' in request.path %}active{% endif %}">
                     <i class="fas fa-shopping-cart"></i> Orders
-                    {% set pending_count = pending_orders|default(0) %}
-                    <span class="badge {% if pending_count > 0 %}warning{% endif %}">{{ pending_count }}</span>
+                    {% set paid_count = total_orders|default(0) %}
+                    <span class="badge {% if paid_count > 0 %}success{% endif %}">{{ paid_count }}</span>
                 </a>
                 <a href="/admin/categories" class="sidebar-link {% if '/categories' in request.path %}active{% endif %}">
                     <i class="fas fa-tags"></i> Categories
@@ -843,13 +843,13 @@
                     return response.json();
                 })
                 .then(function(data) {
-                    // Update Orders badge (shows pending/unpaid orders)
-                    var pendingCount = data.pending_orders || 0;
+                    // Update Orders badge (shows paid orders)
+                    var totalPaidOrders = data.total_orders || 0;
                     document.querySelectorAll('.sidebar-link .badge, .menu-link .badge').forEach(function(badge) {
                         var parent = badge.closest('a') || badge.closest('.menu-link') || badge.closest('.sidebar-link');
                         if (parent && parent.textContent && parent.textContent.includes('Orders')) {
-                            badge.textContent = pendingCount;
-                            badge.className = 'badge' + (pendingCount > 0 ? ' warning' : '');
+                            badge.textContent = totalPaidOrders;
+                            badge.className = 'badge' + (totalPaidOrders > 0 ? ' success' : '');
                         }
                     });
                     
@@ -873,7 +873,7 @@
                         }
                     });
                     
-                    var total = pendingCount + reviewCount + msgCount;
+                    var total = totalPaidOrders + reviewCount + msgCount;
                     document.title = (total > 0 ? '(' + total + ') ' : '') + 'Olivintra Admin';
                 })
                 .catch(function(error) {
@@ -884,8 +884,8 @@
         setInterval(updateBadges, 30000);
         setTimeout(updateBadges, 2000);
 
-        console.log('✨ Admin panel loaded - Showing PAID orders only in statistics');
-        console.log('📊 Unpaid orders shown as "Pending Payments" in dashboard');
+        console.log('✨ Admin panel loaded - Showing PAID orders count in sidebar');
+        console.log('📊 Total paid orders displayed in Orders badge');
     </script>
     {% block extra_js %}{% endblock %}
 </body>
