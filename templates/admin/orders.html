@@ -50,24 +50,7 @@
 </div>
 {% endif %}
 
-<!-- Info note for paid orders view -->
-{% if not request.args.get('show_all') %}
-<div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r-lg">
-    <div class="flex items-start">
-        <div class="flex-shrink-0">
-            <i class="fas fa-check-circle text-green-500 text-xl"></i>
-        </div>
-        <div class="ml-3">
-            <p class="text-sm text-green-800">
-                ✅ Showing <strong>paid orders only</strong>
-            </p>
-            <p class="text-xs text-green-700 mt-1">
-                <a href="/admin/orders?show_all=true" class="font-semibold underline hover:text-green-900">View all orders (including unpaid) →</a>
-            </p>
-        </div>
-    </div>
-</div>
-{% endif %}
+
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="overflow-x-auto">
