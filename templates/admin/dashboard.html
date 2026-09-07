@@ -202,7 +202,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="todayOrders">0 paid orders</span> today
+            <span id="todayOrders">0 orders</span> today
         </div>
     </div>
 
@@ -217,7 +217,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="yesterdayOrders">0 paid orders</span> yesterday
+            <span id="yesterdayOrders">0 orders</span> yesterday
         </div>
     </div>
 
@@ -232,7 +232,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="monthOrders">0 paid orders</span> this month
+            <span id="monthOrders">0 orders</span> this month
         </div>
     </div>
 
@@ -247,7 +247,7 @@
             </div>
         </div>
         <div class="mt-2 text-xs text-gray-500">
-            <span id="yearOrders">0 paid orders</span> this year
+            <span id="yearOrders">0 orders</span> this year
         </div>
     </div>
 </div>
@@ -257,7 +257,7 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Orders</h3>
-            <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
+            <span class="text-xs text-gray-400">Last 7 days</span>
         </div>
         <div class="chart-container" style="height: 250px;">
             <canvas id="ordersChart"></canvas>
@@ -266,61 +266,13 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Revenue</h3>
-            <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
+            <span class="text-xs text-gray-400">Last 7 days</span>
         </div>
         <div class="chart-container" style="height: 250px;">
             <canvas id="revenueChart"></canvas>
         </div>
     </div>
 </div>
-
-<!-- Order Status Distribution -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-2">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-semibold text-brand-dark text-lg">Order Status Distribution</h3>
-            <a href="/admin/orders" class="text-sm text-brand-accent hover:underline">View All →</a>
-        </div>
-        
-        <div class="space-y-4">
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Pending</span>
-                    <span class="font-semibold text-yellow-600" id="distPending">0</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-yellow-500 h-3 rounded-full transition-all duration-700" id="distPendingBar" style="width: 0%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Confirmed</span>
-                    <span class="font-semibold text-blue-600" id="distConfirmed">0</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-700" id="distConfirmedBar" style="width: 0%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Shipped</span>
-                    <span class="font-semibold text-purple-600" id="distShipped">0</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-purple-500 h-3 rounded-full transition-all duration-700" id="distShippedBar" style="width: 0%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Delivered</span>
-                    <span class="font-semibold text-green-600" id="distDelivered">0</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-green-500 h-3 rounded-full transition-all duration-700" id="distDeliveredBar" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h3 class="font-semibold text-brand-dark text-lg mb-4">Quick Stats</h3>
