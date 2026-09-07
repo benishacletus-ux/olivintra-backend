@@ -3,6 +3,113 @@
 {% block title %}Dashboard - Olivintra Admin{% endblock %}
 
 {% block admin_content %}
+<style>
+    /* ==================== MOBILE RESPONSIVE FIXES ==================== */
+    
+    /* Chart containers - prevent overflow */
+    .chart-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+    
+    .chart-container canvas {
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: 200px !important;
+    }
+    
+    /* Force charts to be smaller on mobile */
+    @media (max-width: 768px) {
+        .chart-container {
+            min-height: 180px !important;
+            max-height: 220px !important;
+        }
+        
+        .chart-container canvas {
+            max-height: 180px !important;
+        }
+        
+        /* Fix grid overflow */
+        .grid-cols-1.lg\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+        
+        /* Cards padding reduce */
+        .admin-card {
+            padding: 12px 16px !important;
+        }
+        
+        /* Stats cards on mobile */
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        
+        /* Revenue metrics on mobile */
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        /* Order status distribution on mobile */
+        .grid.grid-cols-1.lg\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* Summary cards on mobile */
+        .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-5 {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 6px !important;
+        }
+        
+        .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-5 .p-3 {
+            padding: 8px 4px !important;
+        }
+        
+        .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-5 .text-xl {
+            font-size: 1rem !important;
+        }
+        
+        /* Quick action cards on mobile */
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        /* Stats cards - single column on very small screens */
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 .text-2xl {
+            font-size: 1.1rem !important;
+        }
+        
+        /* Revenue metrics - single column */
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+        }
+        
+        /* Summary cards - 2 columns */
+        .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-5 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+        
+        /* Chart containers */
+        .chart-container {
+            min-height: 150px !important;
+            max-height: 180px !important;
+        }
+        
+        .chart-container canvas {
+            max-height: 150px !important;
+        }
+    }
+</style>
+
 <div class="flex items-center justify-between mb-8">
     <div>
         <h2 class="text-3xl font-serif text-brand-dark">Dashboard</h2>
@@ -152,7 +259,7 @@
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Orders</h3>
             <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
         </div>
-        <div style="height: 250px;">
+        <div class="chart-container" style="height: 250px;">
             <canvas id="ordersChart"></canvas>
         </div>
     </div>
@@ -161,7 +268,7 @@
             <h3 class="font-semibold text-brand-dark text-lg">Weekly Revenue</h3>
             <span class="text-xs text-gray-400">Last 7 days (Paid only)</span>
         </div>
-        <div style="height: 250px;">
+        <div class="chart-container" style="height: 250px;">
             <canvas id="revenueChart"></canvas>
         </div>
     </div>
